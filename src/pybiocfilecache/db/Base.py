@@ -11,7 +11,15 @@ _logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 
-def create_schema(cache_dir): 
+def create_schema(cache_dir:str): 
+    """Create the schema in the sqlite database
+
+    Args:
+        cache_dir (str): Location where the cache directory/path to sqlite file is
+
+    Returns:
+        a tuple of sqlalchemy engine and session maker
+    """    
     if not cache_dir:
         raise Exception(f"cache_dir cannot be empty")
 

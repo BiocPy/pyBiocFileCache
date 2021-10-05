@@ -1,6 +1,4 @@
-import pytest
 import os
-# import shutil
 
 from pybiocfilecache.BiocFileCache import BiocFileCache
 
