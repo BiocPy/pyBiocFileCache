@@ -1,44 +1,60 @@
-.. These are examples of badges you might want to add to your README:
-   please update the URLs accordingly
-
-    .. image:: https://api.cirrus-ci.com/github/<USER>/pyBiocCache.svg?branch=main
-        :alt: Built Status
-        :target: https://cirrus-ci.com/github/<USER>/pyBiocCache
-    .. image:: https://readthedocs.org/projects/pyBiocCache/badge/?version=latest
-        :alt: ReadTheDocs
-        :target: https://pyBiocCache.readthedocs.io/en/stable/
-    .. image:: https://img.shields.io/coveralls/github/<USER>/pyBiocCache/main.svg
-        :alt: Coveralls
-        :target: https://coveralls.io/r/<USER>/pyBiocCache
-    .. image:: https://img.shields.io/pypi/v/pyBiocCache.svg
-        :alt: PyPI-Server
-        :target: https://pypi.org/project/pyBiocCache/
-    .. image:: https://img.shields.io/conda/vn/conda-forge/pyBiocCache.svg
-        :alt: Conda-Forge
-        :target: https://anaconda.org/conda-forge/pyBiocCache
-    .. image:: https://pepy.tech/badge/pyBiocCache/month
-        :alt: Monthly Downloads
-        :target: https://pepy.tech/project/pyBiocCache
-    .. image:: https://img.shields.io/twitter/url/http/shields.io.svg?style=social&label=Twitter
-        :alt: Twitter
-        :target: https://twitter.com/pyBiocCache
-
-.. image:: https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold
-    :alt: Project generated with PyScaffold
-    :target: https://pyscaffold.org/
-
-|
-
 ===========
 pyBiocCache
 ===========
 
 
-    Add a short description here!
+    An attempt at the Python Interface and Implementation of 
+    the `BiocFileCache R pacakge<https://github.com/Bioconductor/BiocFileCache>`
+
+    Note: Package is in development. Use with caution!!
 
 
-A longer description of your project goes here...
+Examples:
 
+    1. Create a cache directory 
+
+    ```
+        from pyBiocCache import BiocFileCache
+        import os
+
+        bfc = BiocFileCache(cache_dir = os.getcwd() + "/cache")
+    ```
+
+    Once the cache is created, user has a few options to either
+     - Create a resource - `add`
+     - Get a resource from cache = `get`
+     - Remove a resource - `remove`
+     - update a resource - `update`
+     - purge the entire cache = `purge`
+
+    2. Add resource to cache
+    ```
+        rec = bfc.add("test1", os.getcwd() + "/test1.txt")
+        print(rec)
+    ```
+
+    3. Get resource from cache
+    ```
+        rec = bfc.get("test1")
+        print(rec)
+    ```
+
+    4. Remove resource from cache
+    ```
+        rec = bfc.remove("test1")
+        print(rec)
+    ```
+
+    5. Update resource in cache
+    ```
+        rec = bfc.get("test1"m os.getcwd() + "test2.txt")
+        print(rec)
+    ```
+
+    6. purge the cache
+    ```
+        bfc.purge()
+    ```
 
 .. _pyscaffold-notes:
 
