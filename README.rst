@@ -3,10 +3,10 @@ pyBiocCache
 ===========
 
 
-    An attempt at the Python Interface and Implementation of 
-    the `BiocFileCache R pacakge<https://github.com/Bioconductor/BiocFileCache>`
+An attempt at the Python Interface and Implementation of 
+the `BiocFileCache R package<https://github.com/Bioconductor/BiocFileCache> `
 
-    Note: Package is in development. Use with caution!!
+Note: Package is in development. Use with caution!!
 
 
 Examples:
