@@ -8,7 +8,7 @@ import os
 import tempfile
 import uuid
 
-from pybioccache import __version__
+from pybiocfilecache import __version__
 from .db import create_schema
 from .db.schema import Resource
 from shutil import copy2, move
@@ -62,7 +62,7 @@ class BiocFileCache:
             rtype (str, optional): one of local, web, or relative. Defaults to "local".
             action (str, optional): either copy, move or asis. Defaults to "copy".
             ext (bool, optional): use file extension when storing in cache ? Defaults to False.
-        
+
         Returns:
             database record of the new resource in cache
         """
@@ -110,7 +110,7 @@ class BiocFileCache:
     def generate_id():
         return uuid.uuid4().hex
 
-    def query(self, query: str, field:str="rname"):
+    def query(self, query: str, field: str = "rname"):
         """Search cache for a resource
 
         Args:

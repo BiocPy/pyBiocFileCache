@@ -1,5 +1,5 @@
 """
-    Setup file for pyBiocCache.
+    Setup file for pyBiocFileCache.
     Use setup.cfg to configure your project.
 
     This file was generated with PyScaffold 4.1.

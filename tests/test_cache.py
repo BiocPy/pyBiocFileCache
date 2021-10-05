@@ -2,7 +2,7 @@ import pytest
 import os
 # import shutil
 
-from pybioccache.BiocFileCache import BiocFileCache
+from pybiocfilecache.BiocFileCache import BiocFileCache
 
 __author__ = "jkanche"
 __copyright__ = "jkanche"

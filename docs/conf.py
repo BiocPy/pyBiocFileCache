@@ -34,7 +34,7 @@ except ImportError:
     from sphinx import apidoc
 
 output_dir = os.path.join(__location__, "api")
-module_dir = os.path.join(__location__, "../src/pybioccache")
+module_dir = os.path.join(__location__, "../src/pybiocfilecache")
 try:
     shutil.rmtree(output_dir)
 except FileNotFoundError:
@@ -77,8 +77,29 @@ extensions = [
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
+
+# Configure AutoStructify
+# https://recommonmark.readthedocs.io/en/latest/auto_structify.html
+def setup(app):
+    from recommonmark.transform import AutoStructify
+
+    params = {
+        "enable_auto_toc_tree": True,
+        "auto_toc_tree_section": "Contents",
+        "auto_toc_maxdepth": 2,
+        "enable_eval_rst": True,
+        "enable_math": True,
+        "enable_inline_math": True,
+    }
+    app.add_config_value("recommonmark_config", params, True)
+    app.add_transform(AutoStructify)
+
+
+# Enable markdown
+extensions.append("recommonmark")
+
 # The suffix of source filenames.
-source_suffix = ".rst"
+source_suffix = [".rst", ".md"]
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
@@ -87,7 +108,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = "pyBiocCache"
+project = "pyBiocFileCache"
 copyright = "2021, jkanche"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -99,7 +120,7 @@ copyright = "2021, jkanche"
 # If you don’t need the separation provided between version and release,
 # just set them both to the same value.
 try:
-    from pybioccache import __version__ as version
+    from pybiocfilecache import __version__ as version
 except ImportError:
     version = ""
 
@@ -229,7 +250,7 @@ html_static_path = ["_static"]
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "pyBiocCache-doc"
+htmlhelp_basename = "pyBiocFileCache-doc"
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -246,7 +267,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "user_guide.tex", "pyBiocCache Documentation", "jkanche", "manual")
+    ("index", "user_guide.tex", "pyBiocFileCache Documentation", "jkanche", "manual")
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
