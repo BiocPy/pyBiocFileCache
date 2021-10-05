@@ -13,12 +13,12 @@ Examples:
 
     1. Create a cache directory 
 
-    ```
-        from pyBiocCache import BiocFileCache
-        import os
+    .. code-block:: Python
+        
+    from pyBiocCache import BiocFileCache
+    import os
 
-        bfc = BiocFileCache(cache_dir = os.getcwd() + "/cache")
-    ```
+    bfc = BiocFileCache(cache_dir = os.getcwd() + "/cache")
 
     Once the cache is created, user has a few options to either
      - Create a resource - `add`
@@ -28,33 +28,33 @@ Examples:
      - purge the entire cache = `purge`
 
     2. Add resource to cache
-    ```
-        rec = bfc.add("test1", os.getcwd() + "/test1.txt")
-        print(rec)
-    ```
+    .. code-block:: Python
+    
+    rec = bfc.add("test1", os.getcwd() + "/test1.txt")
+    print(rec)
 
     3. Get resource from cache
-    ```
-        rec = bfc.get("test1")
-        print(rec)
-    ```
+    .. code-block:: Python
+    
+    rec = bfc.get("test1")
+    print(rec)
 
     4. Remove resource from cache
-    ```
-        rec = bfc.remove("test1")
-        print(rec)
-    ```
+    .. code-block:: Python
+    
+    rec = bfc.remove("test1")
+    print(rec)
 
     5. Update resource in cache
-    ```
-        rec = bfc.get("test1"m os.getcwd() + "test2.txt")
-        print(rec)
-    ```
+    .. code-block:: Python
+    
+    rec = bfc.get("test1"m os.getcwd() + "test2.txt")
+    print(rec)
 
     6. purge the cache
-    ```
-        bfc.purge()
-    ```
+    .. code-block:: Python
+
+    bfc.purge()
 
 .. _pyscaffold-notes:
 
