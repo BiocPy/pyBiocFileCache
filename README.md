@@ -3,17 +3,25 @@
 An attempt at the Python implementation of 
 the [BiocFileCache R package](https://github.com/Bioconductor/BiocFileCache)
 
-Note: Package is in development. Use with caution!!
+***Note: Package is in development. Use with caution!!***
 
 
 
 
 ## Description
 
+### Installation
+
+***Note: Package is not on PyPI yet.***
+
+```
+pip install git+https://github.com/epiviz/pyBiocFileCache
+```
+
 #### Create a cache directory 
 
 ```
-from pyBiocCache import BiocFileCache
+from pybiocfilecache import BiocFileCache
 import os
 
 bfc = BiocFileCache(cache_dir = os.getcwd() + "/cache")
