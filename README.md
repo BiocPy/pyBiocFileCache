@@ -1,6 +1,6 @@
 # pyBiocFileCache
 
-An attempt at the Python implementation of 
+An attempt at implementing a Python version of 
 the [BiocFileCache R package](https://github.com/Bioconductor/BiocFileCache)
 
 ***Note: Package is in development. Use with caution!!***
