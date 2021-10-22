@@ -3,19 +3,18 @@
 An attempt at implementing a Python version of 
 the [BiocFileCache R package](https://github.com/Bioconductor/BiocFileCache)
 
+Can be used as a cache interface for any file based system
+
 ***Note: Package is in development. Use with caution!!***
-
-
-
 
 ## Description
 
 ### Installation
 
-***Note: Package is not on PyPI yet.***
+PyPI - https://pypi.org/project/pyBiocFileCache/
 
 ```
-pip install git+https://github.com/epiviz/pyBiocFileCache
+pip install pyBiocFileCache
 ```
 
 #### Create a cache directory 
