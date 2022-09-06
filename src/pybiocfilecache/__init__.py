@@ -1,18 +1,25 @@
-import sys
+"""Python Implementation of BiocFileCache."""
 
-if sys.version_info[:2] >= (3, 8):
-    # TODO: Import directly (no need for conditional) when `python_requires = >= 3.8`
-    from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
+from sys import version_info
+
+# pylint: disable=useless-import-alias
+# flake8: noqa
+from .BiocFileCache import BiocFileCache as BiocFileCache
+
+if version_info[:2] >= (3, 8):
+    from importlib.metadata import (  # type: ignore # pylint: disable=import-error,no-name-in-module # noqa: E501
+        PackageNotFoundError,
+        version,
+    )
 else:
-    from importlib_metadata import PackageNotFoundError, version  # pragma: no cover
+    from importlib_metadata import (  # type: ignore
+        PackageNotFoundError,
+        version,
+    )
 
 try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "pyBiocCache"
-    __version__ = version(dist_name)
+    __version__ = version(__name__)  # type: ignore
 except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 finally:
     del version, PackageNotFoundError
-
-from .BiocFileCache import BiocFileCache

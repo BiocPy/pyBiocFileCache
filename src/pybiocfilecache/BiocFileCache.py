@@ -1,220 +1,272 @@
-"""
-Python Implementation of BiocFileCache
-"""
+"""The BiocFileCache class."""
 
-import logging
-import sys
-import os
-import tempfile
-import uuid
-
-from pybiocfilecache import __version__
-from .db import create_schema
-from .db.schema import Resource
+from logging import getLogger
+from pathlib import Path
 from shutil import copy2, move
+from tempfile import mkdtemp
+from typing import List, Optional
+from uuid import uuid4
+
 from sqlalchemy import func
+
+from .schema import Resource, create_schema
+from .utils import StrPath
 
 __author__ = "jkanche"
 __copyright__ = "jkanche"
 __license__ = "MIT"
 
-_logger = logging.getLogger(__name__)
+_logger = getLogger(__name__)
 
 
 class BiocFileCache:
-    """
-    Class to manage and cache files
-    """
+    """Manage and cache files."""
 
-    def __init__(self, cache_dir: str = None):
-        # check if cache dir exists, if not use the tmp directory
-        if cache_dir is None:
-            self.cache = BiocFileCache.create_tmp_dir()
-        else:
-            if not os.path.isdir(cache_dir):
-                mode = 0o777
-                try:
-                    os.mkdir(cache_dir, mode)
-                except Exception as e:
-                    raise Exception(
-                        f"Failed to created directory {cache_dir}: {str(e)}"
-                    )
+    def __init__(self, cache_dir: StrPath = mkdtemp()) -> None:
+        """Initialize BiocFileCache.
 
-            self.cache = cache_dir
+        Parameters
+        ----------
+        cache_dir : Path | str
+            The path to the cache directory. Default = `mkdtemp()`.
+        """
+        if isinstance(cache_dir, str):
+            cache_dir = Path(cache_dir)
+
+        if not cache_dir.exists():
+            try:
+                cache_dir.mkdir(parents=True)
+            except Exception as expt:
+                raise Exception(
+                    f"Failed to create directory: '{cache_dir}'."
+                ) from expt
+
+        self.cache_dir = cache_dir
 
         # create/access sqlite file
-        db_cache = f"{self.cache}/BiocFileCache.sqlite"
-        (self.engine, self.sessionLocal) = create_schema(db_cache)
+        (self.engine, self.session_local) = create_schema(
+            f"{self.cache_dir}/BiocFileCache.sqlite"
+        )
 
-    def add(
-        self,
-        rname: str,
-        fpath: str,
-        rtype: str = "local",
-        action: str = "copy",
-        ext: bool = False,
-    ):
-        """Add a resource to cache from a given name and path
+    @staticmethod
+    def _copy_or_move(
+        action: str, f_path: StrPath, r_path: StrPath, r_name: str
+    ) -> None:
+        """Try to copy or move the `f_path` to the `r_path`.
 
-        Args:
-            rname (str): Name of the resource to add to cache
-            fpath (str): Location of the resource
-            rtype (str, optional): one of local, web, or relative. Defaults to "local".
-            action (str, optional): either copy, move or asis. Defaults to "copy".
-            ext (bool, optional): use file extension when storing in cache ? Defaults to False.
-
-        Returns:
-            database record of the new resource in cache
+        Parameters
+        ----------
+        action : str
+            Either `"copy"` or `"move"`. Default = `"copy"`.
+        f_path : Path | str
+            Location of the resource to copy or move.
+        r_path : str
+            Destination to copy or move to.
+        r_name :  str
+            Name of the resource to add to cache.
         """
-        if not os.path.exists(fpath):
-            raise Exception(f"File at {fpath} does not exist")
-
-        existing_cache = self.get(rname)
-        if existing_cache is not None:
-            # raise Exception(f"File with {rname} already exists")
-            _logger.info(f"File with {rname} already exists, updating instead")
-            self.update(rname, fpath)
-            return
-
-        rid = BiocFileCache.generate_id()
-        rbasename, rext = os.path.splitext(os.path.basename(fpath)[0])
-
-        rpath = f"{self.cache}/{rid}.{rext}" if ext else f"{self.cache}/{rid}"
-
-        # copy the file to cache
         try:
             if action == "copy":
-                copy2(fpath, rpath)
+                copy2(f_path, r_path)
             elif action == "move":
-                move(fpath, rpath)
-        except Exception as e:
-            raise Exception(f"Error storing file in cache: {str(e)}")
+                move(str(f_path), r_path)
+        except Exception as expt:
+            if action not in ["copy", "move"]:
+                raise Exception(
+                    f"Given action: {action} not one of 'move' or 'copy'."
+                ) from expt
+
+            raise Exception(
+                f"Error storing resource: '{r_name}' from: '{r_path}' in "
+                "cache.",
+            ) from expt
+
+    def add(  # pylint: disable=too-many-arguments
+        self,
+        r_name: str,
+        f_path: StrPath,
+        r_type: str = "local",
+        action: str = "copy",
+        ext: bool = False,
+    ) -> Resource:
+        """Add the file at `f_path` to the cache under `r_name`.
+
+        Parameters
+        ----------
+        r_name :  str
+            Name of the resource to add to cache.
+        f_path : Path | str
+            Location of the resource.
+        r_type : str
+            One of `"local"`, `"web"`, or `"relative"`. Default = `"local"`.
+        action : str
+            Either `"copy"` or `"move"`. Default = `"copy"`.
+        ext : bool
+            Use file extension when storing in cache? Default = `False`.
+
+        Returns
+        -------
+        resource : Resource
+            The `Resource` object containing the new resource.
+        """
+        if isinstance(f_path, str):
+            f_path = Path(f_path)
+
+        if not f_path.exists():
+            raise Exception(f"Resource at {f_path} does not exist.")
+
+        if self.get(r_name) is not None:
+            _logger.info(
+                "File with name '%s' already exists in cache, updating "
+                "instead.",
+                r_name,
+            )
+            return self.update(r_name, f_path)
+
+        r_id = uuid4().hex
+
+        r_path = (
+            f"{self.cache_dir}/{r_id}.{f_path.suffix}"
+            if ext
+            else f"{self.cache_dir}/{r_id}"
+        )
+
+        # copy the file to cache
+        self._copy_or_move(action, f_path, r_path, r_name)
 
         # create new record in the database
         res = Resource(
-            **dict(rid=rid, rname=rname, rpath=rpath, rtype=rtype, fpath=fpath)
+            **dict(
+                r_id=r_id,
+                r_name=r_name,
+                r_path=r_path,
+                r_type=r_type,
+                f_path=f_path,
+            )
         )
 
-        session = self.sessionLocal()
-        session.add(res)
+        session = self.session_local()
+        session.add(res)  # type: ignore
         session.commit()
-        session.refresh(res)
+        session.refresh(res)  # type: ignore
 
         return res
 
-    @staticmethod
-    def create_tmp_dir():
-        """create a temporary directory
+    def query(self, query: str, field: str = "r_name") -> List[Resource]:
+        """Search cache for a resource.
 
-        Returns:
-            str: path to the directory
-        """        
-        return tempfile.mkdtemp()
+        Parameters
+        ----------
+        query : str
+            Query to search for.
+        Field : str
+            Field to search, one of `"access_time"`, ``"create_time"`,
+            `"e_tag"`, `"expires"`, `"f_path"`, "id"`, `"last_modified_time"`,
+            `"r_id"`, `"r_name"`, `"r_path"`, `"r_type"`. Default = `"r_name"`.
 
-    @staticmethod
-    def generate_id():
-        """Generate uuid
-
-        Returns:
-            str: unique string for use as id
-        """        
-        return uuid.uuid4().hex
-
-    def query(self, query: str, field: str = "rname"):
-        """Search cache for a resource
-
-        Args:
-            query (str): query to search
-            field (str, optional): Field to search. Defaults to "rname".
-
-        Returns:
-            obj: list of matching resources from cache
+        Returns
+        -------
+        resource_list : List[Resource]
+            A `list` of matching resource from the cache.
         """
-        session = self.sessionLocal()
-
-        res = (
-            session.query(Resource)
-            .filter(Resource[field].ilike("%{}%".format(query)))
+        res: List[Resource] = (
+            self.session_local()
+            .query(Resource)
+            .filter(Resource[field].ilike(f"%{query}%"))  # type: ignore
             .all()
         )
         return res
 
-    def get(self, rname: str):
-        """get resource by name from cache
+    def get(self, r_name: str) -> Optional[Resource]:
+        """Get a resource by `r_name` from the cache if it exists.
 
-        Args:
-            rname (str): Name of the file to search
+        Parameters
+        ----------
+        r_name : str
+            The `r_name` of the file to search.
 
-        Returns:
-            Resource: matched resource from cache
+        Returns
+        -------
+        resource : Resource | None
+            The matching `Resource` object from the cache if it exists.
         """
-        session = self.sessionLocal()
+        return (
+            self.session_local()
+            .query(Resource)
+            .filter(Resource.r_name == r_name)  # type: ignore
+            .first()
+        )
 
-        res = session.query(Resource).filter(Resource.rname == rname).first()
-        return res
+    def remove(self, r_name: str) -> None:
+        """Remove a `Resource` from the cache by `r_name`.
 
-    def remove(self, rname: str):
-        """remove a resource from cache
-
-        Args:
-            rname (str): resource to remove
+        Parameters
+        ----------
+        r_name : str
+            The `r_name` of the resource to remove.
         """
-        session = self.sessionLocal()
-
-        res = session.query(Resource).filter(Resource.rname == rname).first()
-        session.delete(res)
+        session = self.session_local()
+        res: Resource = (
+            session.query(Resource)
+            .filter(Resource.r_name == r_name)  # type: ignore
+            .first()
+        )
+        session.delete(res)  # type: ignore
         session.commit()
 
         # remove file
-        os.remove(res.rpath)
+        Path(str(res.r_path)).unlink()
 
     def purge(self):
-        """Remove all files from cache"""
-        for file in os.scandir(self.cache):
-            os.remove(file.path)
+        """Remove all files from cache."""
+        for file in self.cache_dir.iterdir():
+            file.unlink()
 
-    def update(self, rname: str, fpath: str, action: str = "copy"):
-        """Update a resource in cache
+    def update(
+        self, r_name: str, f_path: StrPath, action: str = "copy"
+    ) -> Resource:
+        """Update a resource in the cache.
 
-        Args:
-            rname (str): name of the resource in cache
-            fpath (str): new resource to replace existing file in cache
+        Parameters
+        ----------
+        r_name : str
+            The `r_name` of the resource in cache.
+        f_path : str | Path
+            The path to the new file to replace the existing one in the cache.
+        action : str
+            Either `"copy"` or `"move"`. Default = `"copy"`.
 
-        Returns:
-            Resource: Updated resource record in cache
+        Returns
+        -------
+        resource : Resource
+            The updated cache `Resource` containing the new file.
         """
-        session = self.sessionLocal()
+        if isinstance(f_path, str):
+            f_path = Path(f_path)
 
-        if not os.path.exists(fpath):
-            raise Exception(f"File at {fpath} does not exist")
+        if not f_path.exists():
+            raise Exception(f"File: '{f_path}' does not exist")
 
         # get current record
-        rec = self.get(rname)
+        res = self.get(r_name)
+
+        if res is None:
+            _logger.info(
+                "File with name '%s' does not exist, adding instead using "
+                "default arguments except 'action'.",
+                r_name,
+            )
+            return self.add(r_name, f_path, action=action)
 
         # copy the file to cache
-        try:
-            if action == "copy":
-                copy2(fpath, rec.rpath)
-            elif action == "move":
-                move(fpath, rec.rpath)
-        except Exception as e:
-            raise Exception(f"Error storing file in cache: {str(e)}")
+        self._copy_or_move(action, f_path, str(res.r_path), r_name)
 
-        rec.create_time = rec.access_time = rec.last_modified_time = func.now()
+        res.create_time = res.access_time = res.last_modified_time = func.now()
 
-        session.add(rec)
+        session = self.session_local()
+
+        session.add(res)  # type: ignore
         session.commit()
-        session.refresh(rec)
-        return rec
+        session.refresh(res)  # type: ignore
 
-
-def setup_logging(loglevel):
-    """Setup basic logging
-
-    Args:
-      loglevel (int): minimum loglevel for emitting messages
-    """
-    logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(
-        level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
-    )
+        return res

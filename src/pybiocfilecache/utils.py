@@ -1,18 +1,22 @@
-import tempfile
-import uuid
+from logging import basicConfig
+from pathlib import Path
+from sys import stdout
+from typing import Union
 
-def create_tmp_dir():
-    """create a temporary directory
+StrPath = Union[Path, str]
 
-    Returns:
-        str: path to the directory
-    """        
-    return tempfile.mkdtemp()
 
-def generate_id():
-    """Generate uuid
+def setup_logging(log_level: int):
+    """Config basic logging.
 
-    Returns:
-        str: unique string for use as id
-    """        
-    return uuid.uuid4().hex
+    Parameters
+    ----------
+    log_level : int
+        Minimum log level for emitting messages.
+    """
+    basicConfig(
+        level=log_level,
+        stream=stdout,
+        format="[%(asctime)s] %(levelname)s:%(name)s:%(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )

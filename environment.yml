@@ -1,0 +1,24 @@
+name: dev-pybiocfilecache
+
+channels:
+  - conda-forge
+
+# packages with dependencies are also set in .pre-commit-config.yaml
+dependencies:
+  - bandit
+  - black=22.6.0
+  - flake8
+  - isort=5.10.1
+  - pip
+  - pre_commit
+  - prospector
+  - pycodestyle
+  - pydocstyle
+  - pylint
+  - pytest
+  - python-build
+  - python-devtools
+  - python=3.7
+  - tox=3.25.1
+  - pip:
+      - -e .

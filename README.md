@@ -9,63 +9,57 @@ Can be used as a cache interface for any file based system
 
 ## Description
 
-### Installation
+## Installation
 
 PyPI - https://pypi.org/project/pyBiocFileCache/
 
-```
+```shell
 pip install pyBiocFileCache
 ```
 
-#### Create a cache directory 
+## Create a cache directory 
 
-```
+```python
 from pybiocfilecache import BiocFileCache
 import os
 
-bfc = BiocFileCache(cache_dir = os.getcwd() + "/cache")
+bfc = BiocFileCache(cache_dir = "path/to/cache/dir")
 ```
 
-Once the cache directory is created, the library allows
-- Create a resource - `add`
-- Get a resource from cache - `get`
-- Remove a resource - `remove`
-- update a resource - `update`
-- purge the entire cache - `purge`
+Once the cache directory is created, the the `BiocFileCache` class object
+allows you to:
+- Add a resource with the `add` method
+- Get a resource from cache with the `get` method
+- Update a resource with the `update` method
+- Remove a resource with the `remove` method
+- Purge the entire cache with the `purge` method
 
-#### Add a resource to cache
-
-(for testing use the temp files in the `tests/data` directory)
-
-```
-rec = bfc.add("test1", os.getcwd() + "/test1.txt")
-print(rec)
+### Add a resource to cache
+```python
+res = bfc.add("test1", "path/to/resource.txt")
+print(res)
 ```
 
-#### Get resource from cache
-
-```
-rec = bfc.get("test1")
-print(rec)
-```
-
-#### Remove resource from cache
-
-```
-rec = bfc.remove("test1")
-print(rec)
+### Get resource from cache
+```python
+res = bfc.get("test1")
+print(res)
 ```
 
-#### Update resource in cache
-
+### Remove resource from cache
+```python
+res = bfc.remove("test1")
+print(res)
 ```
-rec = bfc.get("test1"m os.getcwd() + "test2.txt")
-print(rec)
+
+### Update resource in cache
+```python
+res = bfc.update("test1")
+print(res)
 ```
 
-#### purge the cache
-
-```
+### purge the cache
+```python
 bfc.purge()
 ```
 

@@ -1,0 +1,22 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 22.6.0
+    hooks:
+    - args: [--line-length, "79"]
+      id: black
+      language_version: python3.7
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.10.1
+    hooks:
+    - args: [--profile, black, -l, "79"]
+      id: isort
+      language_version: python3.7
+  - repo: local
+    hooks:
+    - id: write_schemas
+      name: Write Schemas
+      entry: python
+      files: write_schemas.py
+      language: python
+      pass_filenames: false
+      always_run: True

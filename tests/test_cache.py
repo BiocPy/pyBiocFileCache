@@ -1,64 +1,53 @@
-import os
+"""Test pyBiocFileCache."""
 
-from pybiocfilecache.BiocFileCache import BiocFileCache
+from os import getcwd
+from pathlib import Path
+from shutil import rmtree
+
+from pybiocfilecache import BiocFileCache
 
 __author__ = "jkanche"
 __copyright__ = "jkanche"
 __license__ = "MIT"
 
-CACHE_DIR = os.getcwd() + "/cache"
+DATA_DIR = Path(__file__).parent.joinpath("data")
+
+bfc = BiocFileCache()
+
+# noqa: B101
+
 
 def test_create_cache():
-    assert os.path.exists(CACHE_DIR) == False
-    bfc = BiocFileCache(CACHE_DIR)
-    assert os.path.exists(CACHE_DIR == True)
+    """Test that BiocFileCache creates the cache directory."""
+    cache_dir = Path(f"{getcwd()}/cache")
+    if cache_dir.exists():
+        rmtree(cache_dir)
 
-    bfc.purge()
+    BiocFileCache(cache_dir)
+    assert cache_dir.exists()
+
 
 def test_add_get_operations():
-    # try:
-    #     shutil.rmtree(cache_dir)
-    # except OSError as e:
-    #     print("Error: %s : %s" % (cache_dir, e.strerror))
-    #     assert False
+    """Test BiocFileCache methods that add resources to cache."""
+    bfc.add("test1", DATA_DIR.joinpath("test1.txt"))
+    res1 = bfc.get("test1")
+    assert res1 is not None
 
-    bfc = BiocFileCache(CACHE_DIR)
+    bfc.add("test2", DATA_DIR.joinpath("test2.txt"))
+    res2 = bfc.get("test2")
+    assert res2 is not None
 
-    bfc.add("test1", os.getcwd() + "/tests/data/test1.txt")
-    rec1 = bfc.get("test1")
-    assert rec1 != None
+    assert Path(str(res1.r_path)).read_text(encoding="utf-8") == "test1"
 
-    bfc.add("test2", os.getcwd() + "/tests/data/test2.txt")
-    rec2 = bfc.get("test2")
-    assert rec2 != None
-
-    frec1 = open(rec1.rpath, "r").read()
-    assert frec1 == "test1"
-
-    frec2 = open(rec2.rpath, "r").read()
-    assert frec2 == "test2"
+    assert Path(str(res2.r_path)).read_text(encoding="utf-8") == "test2"
 
     bfc.purge()
 
+
 def test_remove_operations():
-    # try:
-    #     shutil.rmtree(cache_dir)
-    # except OSError as e:
-    #     print("Error: %s : %s" % (cache_dir, e.strerror))
-    #     assert False
-
-    bfc = BiocFileCache(CACHE_DIR)
-
-    bfc.add("test1", os.getcwd() + "/tests/data/test1.txt")
-    rec1 = bfc.get("test1")
-    assert rec1 != None
-
-    bfc.add("test2", os.getcwd() + "/tests/data/test2.txt")
-    rec2 = bfc.get("test2")
-    assert rec2 != None
-
+    """Test BiocFileCache methods that remove resources from cache."""
+    bfc.add("test1", DATA_DIR.joinpath("test1.txt"))
     bfc.remove("test1")
-    rec1 = bfc.get("test1")
-    assert rec1 == None
+    assert bfc.get("test1") is None
 
     bfc.purge()
