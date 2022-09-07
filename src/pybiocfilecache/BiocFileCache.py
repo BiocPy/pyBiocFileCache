@@ -9,7 +9,7 @@ from uuid import uuid4
 
 from sqlalchemy import func
 
-from .schema import Resource, create_schema
+from .db import Resource, create_schema
 from .utils import StrPath
 
 __author__ = "jkanche"
