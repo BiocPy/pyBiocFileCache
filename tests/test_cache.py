@@ -29,24 +29,27 @@ def test_create_cache():
 
 def test_add_get_operations():
     """Test BiocFileCache methods that add resources to cache."""
-    bfc.add("test1", DATA_DIR.joinpath("test1.txt"))
+    res0 = bfc.add("test1", DATA_DIR.joinpath("test1.txt"))
+    assert str(res0.rname) == "test1"
     res1 = bfc.get("test1")
     assert res1 is not None
+    assert str(res1.rname) == "test1"
 
     bfc.add("test2", DATA_DIR.joinpath("test2.txt"))
     res2 = bfc.get("test2")
     assert res2 is not None
 
-    assert Path(str(res1.r_path)).read_text(encoding="utf-8") == "test1"
+    assert Path(str(res1.rpath)).read_text(encoding="utf-8") == "test1"
 
-    assert Path(str(res2.r_path)).read_text(encoding="utf-8") == "test2"
+    assert Path(str(res2.rpath)).read_text(encoding="utf-8") == "test2"
 
     bfc.purge()
 
 
 def test_remove_operations():
     """Test BiocFileCache methods that remove resources from cache."""
-    bfc.add("test1", DATA_DIR.joinpath("test1.txt"))
+    res0 = bfc.add("test1", DATA_DIR.joinpath("test1.txt"))
+    assert str(res0.rname) == "test1"
     bfc.remove("test1")
     assert bfc.get("test1") is None
 

@@ -49,7 +49,13 @@ def create_schema(cache_dir: StrPath) -> Tuple[Engine, sessionmaker]:
 
 
 class Metadata(Base):
-    """Class for holding a resource's metadata."""
+    """Class for holding a resource's metadata.
+
+    Parameters
+    ----------
+    key : Column(String())
+    value : Column(String())
+    """
 
     __tablename__ = "metadata"
     key = Column(String(), primary_key=True, index=True)
@@ -61,21 +67,50 @@ class Metadata(Base):
 
 
 class Resource(Base):
-    """Class for holding a resource's data."""
+    """Class for holding a resource's data.
+
+    Parameters
+    ----------
+    access_time : Column(DateTime)
+        The date and time a resource is utilized within the cache. The access
+        time is updated when the resource is updated or accessed.
+    create_time : Column(DateTime)
+        The date and time a resource is added to the cache.
+    etag : Column(String())
+        Something to do with expiry time/check for updates.
+    expires : Column(DateTime)
+        Time to determine if the resource needs to be updated.
+    fpath : Column(String())
+        Path to current file location or remote web resource.
+    id : Column(Integer)
+    last_modified_time : Column(DateTime)
+        For a remote resource, the last_modified (if available) information for
+        the local copy of the data.
+    rid : Column(String())
+        Unique resource id.
+    rname : Column(String())
+        Name of object in file cache, doe not have to be unique, can be updated
+        anytime.
+    rpath : Column(String())
+        Path to resource in cache.
+    rtype : Column(String())
+        One of `"local"`, `"relative"`, or `"web"` indicating if the resource
+        is a local file, a relative path in the cache, or a web resource.
+    """
 
     __tablename__ = "resource"
     access_time = Column(DateTime, server_default=func.now())
     create_time = Column(DateTime, server_default=func.now())
-    e_tag = Column(String())
+    etag = Column(String())
     expires = Column(DateTime)
-    f_path = Column(String())
+    fpath = Column(String())
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     last_modified_time = Column(DateTime, onupdate=func.now())
-    r_id = Column(String())
-    r_name = Column(String())
-    r_path = Column(String())
-    r_type = Column(String())
+    rid = Column(String())
+    rname = Column(String())
+    rpath = Column(String())
+    rtype = Column(String())
 
     def __repr__(self):
         """Represent the object as a `str`."""
-        return f"<Resource(id='{self.id}', r_name='{self.r_name}')>"
+        return f"<Resource(id='{self.id}', rname='{self.rname}')>"
