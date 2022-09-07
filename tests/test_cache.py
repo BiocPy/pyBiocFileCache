@@ -48,6 +48,7 @@ def test_add_get_operations():
 
 def test_remove_operations():
     """Test BiocFileCache methods that remove resources from cache."""
+    assert bfc.get("test1") is None
     res0 = bfc.add("test1", DATA_DIR.joinpath("test1.txt"))
     assert str(res0.rname) == "test1"
     bfc.remove("test1")
