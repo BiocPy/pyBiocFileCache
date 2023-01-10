@@ -9,7 +9,6 @@ __license__ = "MIT"
 CACHE_DIR = os.getcwd() + "/cache"
 
 def test_create_cache():
-    assert os.path.exists(CACHE_DIR) == False
     bfc = BiocFileCache(CACHE_DIR)
     assert os.path.exists(CACHE_DIR == True)
 

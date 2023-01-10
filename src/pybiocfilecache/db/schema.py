@@ -1,24 +1,31 @@
 from .Base import Base
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
-import logging
 
 __author__ = "jkanche"
 __copyright__ = "jkanche"
 __license__ = "MIT"
 
-_logger = logging.getLogger(__name__)
 
 class Metadata(Base):
-    __tablename__ = 'metadata'
+    """SQLite schema definition to cache metadata objects.
+    """
+
+    __tablename__ = "metadata"
+
     key = Column(String(), primary_key=True, index=True)
     value = Column(String())
 
     def __repr__(self):
         return "<Metadata(key='%s', valye='%s')>" % (self.key, self.value)
 
+
 class Resource(Base):
-    __tablename__ = 'resource'
+    """SQLite schema definition to cache resource files.
+    """
+
+    __tablename__ = "resource"
+
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     rid = Column(String())
     rname = Column(String())
