@@ -1,0 +1,29 @@
+pybiocfilecache.db package
+==========================
+
+Submodules
+----------
+
+pybiocfilecache.db.Base module
+------------------------------
+
+.. automodule:: pybiocfilecache.db.Base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pybiocfilecache.db.schema module
+--------------------------------
+
+.. automodule:: pybiocfilecache.db.schema
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pybiocfilecache.db
+   :members:
+   :undoc-members:
+   :show-inheritance:
