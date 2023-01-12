@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from pybiocfilecache.BiocFileCache import BiocFileCache
 
@@ -8,20 +9,15 @@ __license__ = "MIT"
 
 CACHE_DIR = os.getcwd() + "/cache"
 
+
 def test_create_cache():
-    assert os.path.exists(CACHE_DIR) == False
     bfc = BiocFileCache(CACHE_DIR)
     assert os.path.exists(CACHE_DIR == True)
 
     bfc.purge()
 
-def test_add_get_operations():
-    # try:
-    #     shutil.rmtree(cache_dir)
-    # except OSError as e:
-    #     print("Error: %s : %s" % (cache_dir, e.strerror))
-    #     assert False
 
+def test_add_get_operations():
     bfc = BiocFileCache(CACHE_DIR)
 
     bfc.add("test1", os.getcwd() + "/tests/data/test1.txt")
@@ -40,13 +36,8 @@ def test_add_get_operations():
 
     bfc.purge()
 
-def test_remove_operations():
-    # try:
-    #     shutil.rmtree(cache_dir)
-    # except OSError as e:
-    #     print("Error: %s : %s" % (cache_dir, e.strerror))
-    #     assert False
 
+def test_remove_operations():
     bfc = BiocFileCache(CACHE_DIR)
 
     bfc.add("test1", os.getcwd() + "/tests/data/test1.txt")

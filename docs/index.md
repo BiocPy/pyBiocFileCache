@@ -1,17 +1,16 @@
 # pyBiocFileCache
 
-Add a short description here!
+File system based cache for resources & metadata. Tries to be compatible with [BiocFileCache R package](https://github.com/Bioconductor/BiocFileCache)
 
+***Note: Package is in development. Use with caution!!***
 
-## Note
+### Installation
 
-> This is the main page of your project's [Sphinx] documentation. It is
-> formatted in [Markdown]. Add additional pages by creating md-files in
-> `docs` or rst-files (formated in [reStructuredText]) and adding links to
-> them in the `Contents` section below.
->
-> Please check [Sphinx], [recommonmark] and [autostructify] for more information
-> about how to document your project and how to configure your preferences.
+Package is published to [PyPI](https://pypi.org/project/pyBiocFileCache/)
+
+```
+pip install pybiocfilecache
+```
 
 
 ## Contents
