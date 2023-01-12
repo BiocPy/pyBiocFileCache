@@ -39,16 +39,17 @@ class BiocFileCache:
             cacheDirOrPath = Path(cacheDirOrPath)
 
         if not cacheDirOrPath.exists():
+            mode = 0o777
             try:
-                cacheDirOrPath.mkdir(parents=True)
+                cacheDirOrPath.mkdir(mode=mode, parents=True, exist_ok=True)
             except Exception as e:
-                raise Exception(f"Failed to created directory {cacheDirOrPath}")
+                raise Exception(f"Failed to created directory {cacheDirOrPath}") from e
 
-        self.cache = cacheDirOrPath
+        self.cache = str(cacheDirOrPath)
 
         # create/access sqlite file
-        db_cache = f"{self.cache}/BiocFileCache.sqlite"
-        (self.engine, self.sessionLocal) = create_schema(db_cache)
+        self.db_cache = f"{self.cache}/BiocFileCache.sqlite"
+        (self.engine, self.sessionLocal) = create_schema(self.db_cache)
 
     def add(
         self,
@@ -85,7 +86,7 @@ class BiocFileCache:
         rid = generate_id()
         rpath = f"{self.cache}/{rid}.{fpath.suffix}" if ext else f"{self.cache}/{rid}"
 
-        copy_or_move(fpath, rpath, rname, action)
+        copy_or_move(str(fpath), rpath, rname, action)
 
         # create new record in the database
         res = Resource(
@@ -152,10 +153,6 @@ class BiocFileCache:
         for file in os.scandir(self.cache):
             os.remove(file.path)
 
-        with self.sessionLocal() as session:
-            session.query(Resource).delete()
-            session.commit()
-
     def update(
         self, rname: str, fpath: Union[str, Path], action: str = "copy"
     ) -> Resource:
@@ -180,7 +177,7 @@ class BiocFileCache:
         rec = self.get(rname)
 
         # copy the file to cache
-        copy_or_move(action, fpath, str(rec.rpath), rname)
+        copy_or_move(str(fpath), str(rec.rpath), rname, action)
 
         rec.create_time = rec.access_time = rec.last_modified_time = func.now()
 

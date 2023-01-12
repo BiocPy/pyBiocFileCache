@@ -1,6 +1,6 @@
-from .Base import Base
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
+from .Base import Base
 
 __author__ = "jkanche"
 __copyright__ = "jkanche"
@@ -8,11 +8,7 @@ __license__ = "MIT"
 
 
 class Metadata(Base):
-    """SQLite schema definition to cache metadata objects.
-    """
-
     __tablename__ = "metadata"
-
     key = Column(String(), primary_key=True, index=True)
     value = Column(String())
 
@@ -21,11 +17,7 @@ class Metadata(Base):
 
 
 class Resource(Base):
-    """SQLite schema definition to cache resource files.
-    """
-
     __tablename__ = "resource"
-
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     rid = Column(String())
     rname = Column(String())
@@ -34,10 +26,10 @@ class Resource(Base):
     rpath = Column(String())
     rtype = Column(String())
     fpath = Column(String())
-
     last_modified_time = Column(DateTime, onupdate=func.now())
     etag = Column(String())
     expires = Column(DateTime)
 
     def __repr__(self):
         return "<Resource(id='%s', rname='%s')>" % (self.id, self.rname)
+

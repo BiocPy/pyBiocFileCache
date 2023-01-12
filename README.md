@@ -1,6 +1,6 @@
 # pyBiocFileCache
 
-File system based cache for resources & metadata. Tries to be compatible with [BiocFileCache R package](https://github.com/Bioconductor/BiocFileCache)
+File system based cache for resources & metadata. Compatible with [BiocFileCache R package](https://github.com/Bioconductor/BiocFileCache)
 
 ***Note: Package is in development. Use with caution!!***
 

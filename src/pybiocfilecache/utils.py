@@ -7,6 +7,7 @@ from typing import Union
 import logging
 import sys
 
+
 def create_tmp_dir() -> str:
     """create a temporary directory.
 
@@ -28,7 +29,7 @@ def generate_id() -> str:
 def copy_or_move(
     source: Union[str, Path], target: Union[str, Path], rname: str, action: str = "copy"
 ) -> None:
-    """Copy of move from source to target
+    """Copy or move a resource from `source` to `target`
 
     Args:
         source (Union[str, Path]): source location of the resource to copy of move.
@@ -52,7 +53,8 @@ def copy_or_move(
     except Exception as e:
         raise Exception(
             f"Error storing resource: '{rname}' from: '{source}' in '{target}'",
-        )
+        ) from e
+
 
 def setup_logging(loglevel):
     """Setup basic logging
