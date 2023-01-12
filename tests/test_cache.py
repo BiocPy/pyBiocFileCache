@@ -11,12 +11,6 @@ CACHE_DIR = os.getcwd() + "/cache"
 
 
 def test_create_cache():
-    try:
-        shutil.rmtree(CACHE_DIR)
-    except OSError as e:
-        print("Error: %s : %s" % (CACHE_DIR, e.strerror))
-        assert False
-
     bfc = BiocFileCache(CACHE_DIR)
     assert os.path.exists(CACHE_DIR == True)
 
@@ -24,12 +18,6 @@ def test_create_cache():
 
 
 def test_add_get_operations():
-    try:
-        shutil.rmtree(CACHE_DIR)
-    except OSError as e:
-        print("Error: %s : %s" % (CACHE_DIR, e.strerror))
-        assert False
-
     bfc = BiocFileCache(CACHE_DIR)
 
     bfc.add("test1", os.getcwd() + "/tests/data/test1.txt")
@@ -50,12 +38,6 @@ def test_add_get_operations():
 
 
 def test_remove_operations():
-    try:
-        shutil.rmtree(CACHE_DIR)
-    except OSError as e:
-        print("Error: %s : %s" % (CACHE_DIR, e.strerror))
-        assert False
-
     bfc = BiocFileCache(CACHE_DIR)
 
     bfc.add("test1", os.getcwd() + "/tests/data/test1.txt")
