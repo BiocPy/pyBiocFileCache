@@ -22,7 +22,6 @@ def create_schema(cache_dir: str) -> Tuple[Engine, sessionmaker]:
         a tuple of sqlalchemy engine and session maker
     """
     try:
-
         engine = create_engine(
             f"sqlite:///{cache_dir}", connect_args={"check_same_thread": False}
         )
