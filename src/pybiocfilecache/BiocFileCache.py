@@ -4,15 +4,15 @@ Python Implementation of BiocFileCache
 
 import logging
 import os
+from pathlib import Path
+from typing import List, Optional, Union
+
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from .db import create_schema
 from .db.schema import Resource
-from .utils import generate_id, create_tmp_dir, copy_or_move
-
-from sqlalchemy import func
-
-from typing import Union, List, Optional
-from pathlib import Path
+from .utils import copy_or_move, create_tmp_dir, generate_id
 
 __author__ = "jkanche"
 __copyright__ = "jkanche"
@@ -30,7 +30,8 @@ class BiocFileCache:
         """Initialize BiocFileCache.
 
         Args:
-            cacheDirOrPath (Union[str, Path], optional): Path to cache directory. Defaults to tmp location, `create_tmp_dir()`.
+            cacheDirOrPath (Union[str, Path], optional): Path to cache
+                directory. Defaults to tmp location, `create_tmp_dir()`.
 
         Raises:
             Exception: Failed to initialize cache.
@@ -62,14 +63,17 @@ class BiocFileCache:
         """Add a resource from the provided `fpath` to cache as `rname`.
 
         Args:
-            rname (str): Name of the resource to add to cache
-            fpath (Union[str, Path]): Location of the resource
-            rtype (str, optional): one of `local`, `web`, or `relative`. Defaults to "local".
-            action (str, optional): either `copy`, `move` or `asis`. Defaults to "copy".
-            ext (bool, optional): use file extension when storing in cache ? Defaults to False.
+            rname (str): Name of the resource to add to cache.
+            fpath (Union[str, Path]): Location of the resource.
+            rtype (str, optional): One of `local`, `web`, or `relative`.
+                Defaults to `"local"`.
+            action (str, optional): Either `copy`, `move` or `asis`.
+                Defaults to `"copy"`.
+            ext (bool, optional): Use filepath extension when storing in cache.
+                Defaults to `False`.
 
         Returns:
-            Resource: database record of the new resource in cache
+            Resource: Database record of the new resource in cache
         """
 
         if isinstance(fpath, str):
@@ -81,7 +85,7 @@ class BiocFileCache:
         existing_cache = self.get(rname)
         if existing_cache is not None:
             _logger.info(f"File with {rname} already exists, updating instead")
-            return self.update(rname, fpath)
+            return self.update(rname, fpath, action)
 
         rid = generate_id()
         rpath = f"{self.cache}/{rid}.{fpath.suffix}" if ext else f"{self.cache}/{rid}"
@@ -110,14 +114,24 @@ class BiocFileCache:
         Returns:
             List[Resource]: list of matching resources from cache
         """
-        session = self.sessionLocal()
+        with self.sessionLocal() as session:
+            return (
+                session.query(Resource)
+                .filter(Resource[field].ilike("%{}%".format(query)))
+                .all()
+            )
 
-        res = (
-            session.query(Resource)
-            .filter(Resource[field].ilike("%{}%".format(query)))
-            .all()
-        )
-        return res
+    def _get(self, session: Session, rname: str) -> Optional[Resource]:
+        """Get a resource with `rname` from given `Session`.
+
+        Args:
+            session (Session): The `Session` object to use.
+            rname (str): The `rname` of the `Resource` to get.
+
+        Returns:
+            res (Resource, optional): The `Resource` for the `rname` if any.
+        """
+        return session.query(Resource).filter(Resource.rname == rname).first()
 
     def get(self, rname: str) -> Optional[Resource]:
         """get resource by name from cache.
@@ -128,10 +142,7 @@ class BiocFileCache:
         Returns:
             Optional[Resource]: matched resource from cache if exists.
         """
-        session = self.sessionLocal()
-
-        res = session.query(Resource).filter(Resource.rname == rname).first()
-        return res
+        return self._get(self.sessionLocal(), rname)
 
     def remove(self, rname: str) -> None:
         """Remove a resource from cache by name.
@@ -139,17 +150,15 @@ class BiocFileCache:
         Args:
             rname (str): Name of the resource to remove
         """
-        session = self.sessionLocal()
-
-        res = session.query(Resource).filter(Resource.rname == rname).first()
-        session.delete(res)
-        session.commit()
-
-        # remove file
-        os.remove(res.rpath)
+        with self.sessionLocal() as session:
+            res: Resource = self._get(session, rname)
+            session.delete(res)
+            session.commit()
+            # remove file
+            Path(res.rpath).unlink()
 
     def purge(self):
-        """Remove all files from cache"""
+        """Remove all files from cache."""
         for file in os.scandir(self.cache):
             os.remove(file.path)
 
@@ -173,17 +182,14 @@ class BiocFileCache:
         if not fpath.exists():
             raise Exception(f"File: '{fpath}' does not exist")
 
-        # get current record
-        rec = self.get(rname)
-
-        # copy the file to cache
-        copy_or_move(str(fpath), str(rec.rpath), rname, action)
-
-        rec.create_time = rec.access_time = rec.last_modified_time = func.now()
-
         with self.sessionLocal() as session:
-            session.add(rec)
+            res: Resource = self._get(session, rname)
+            # copy the file to cache
+            copy_or_move(str(fpath), str(res.rpath), rname, action)
+            # TODO: is this needed?
+            res.create_time = res.access_time = res.last_modified_time = func.now()
+            session.merge(res)
             session.commit()
-            session.refresh(rec)
+            session.refresh(res)
 
-        return rec
+        return res
