@@ -114,15 +114,12 @@ class BiocFileCache:
         Returns:
             List[Resource]: list of matching resources from cache
         """
-        session = self.sessionLocal()
-
-        res = (
-            session.query(Resource)
-            .filter(Resource[field].ilike("%{}%".format(query)))
-            .all()
-        )
-
-        return res
+        with self.sessionLocal() as session:
+            return (
+                session.query(Resource)
+                .filter(Resource[field].ilike("%{}%".format(query)))
+                .all()
+            )
 
     def _get(self, session: Session, rname: str) -> Optional[Resource]:
         """Get a resource with `rname` from given `Session`.
@@ -134,7 +131,6 @@ class BiocFileCache:
         Returns:
             res (Resource, optional): The `Resource` for the `rname` if any.
         """
-
         return session.query(Resource).filter(Resource.rname == rname).first()
 
     def get(self, rname: str) -> Optional[Resource]:
@@ -154,12 +150,12 @@ class BiocFileCache:
         Args:
             rname (str): Name of the resource to remove
         """
-        session = self.sessionLocal()
-        res: Resource = self._get(session, rname)
-        session.delete(res)
-        session.commit()
-        # remove file
-        Path(res.rpath).unlink()
+        with self.sessionLocal() as session:
+            res: Resource = self._get(session, rname)
+            session.delete(res)
+            session.commit()
+            # remove file
+            Path(res.rpath).unlink()
 
     def purge(self):
         """Remove all files from cache."""
