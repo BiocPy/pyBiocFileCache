@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="pybiocfilecache.db package" href="pybiocfilecache.db.html" /><link rel="prev" title="pybiocfilecache" href="modules.html" />
 
     <!-- Generated with Sphinx 6.1.3 and Furo 2022.12.07 -->
-        <title>pybiocfilecache package - pyBiocFileCache 0.2.0 documentation</title>
+        <title>pybiocfilecache package - pyBiocFileCache 0.2.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -123,7 +123,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">pyBiocFileCache 0.2.0 documentation</div></a>
+      <a href="../index.html"><div class="brand">pyBiocFileCache 0.2.1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -146,7 +146,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
   
-  <span class="sidebar-brand-text">pyBiocFileCache 0.2.0 documentation</span>
+  <span class="sidebar-brand-text">pyBiocFileCache 0.2.1 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -248,7 +248,7 @@
 <p>Python Implementation of BiocFileCache</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pybiocfilecache.BiocFileCache.BiocFileCache">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pybiocfilecache.BiocFileCache.</span></span><span class="sig-name descname"><span class="pre">BiocFileCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cacheDirOrPath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.9/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.9/library/pathlib.html#pathlib.Path" title="(in Python v3.9)"><span class="pre">Path</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'/tmp/tmpve2n8_hj'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pybiocfilecache/BiocFileCache.html#BiocFileCache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pybiocfilecache.BiocFileCache.BiocFileCache" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pybiocfilecache.BiocFileCache.</span></span><span class="sig-name descname"><span class="pre">BiocFileCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cacheDirOrPath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.9/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.9/library/pathlib.html#pathlib.Path" title="(in Python v3.9)"><span class="pre">Path</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'/tmp/tmpqsofq2j6'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pybiocfilecache/BiocFileCache.html#BiocFileCache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pybiocfilecache.BiocFileCache.BiocFileCache" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.9/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class to manage and cache files.</p>
 <dl class="py method">
@@ -258,15 +258,18 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rname</strong> (<a class="reference external" href="https://docs.python.org/3.9/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of the resource to add to cache</p></li>
-<li><p><strong>fpath</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3.9/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>Path</em><em>]</em>) – Location of the resource</p></li>
-<li><p><strong>rtype</strong> (<a class="reference external" href="https://docs.python.org/3.9/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – one of <cite>local</cite>, <cite>web</cite>, or <cite>relative</cite>. Defaults to “local”.</p></li>
-<li><p><strong>action</strong> (<a class="reference external" href="https://docs.python.org/3.9/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – either <cite>copy</cite>, <cite>move</cite> or <cite>asis</cite>. Defaults to “copy”.</p></li>
-<li><p><strong>ext</strong> (<a class="reference external" href="https://docs.python.org/3.9/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – use file extension when storing in cache ? Defaults to False.</p></li>
+<li><p><strong>rname</strong> (<a class="reference external" href="https://docs.python.org/3.9/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of the resource to add to cache.</p></li>
+<li><p><strong>fpath</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3.9/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>Path</em><em>]</em>) – Location of the resource.</p></li>
+<li><p><strong>rtype</strong> (<a class="reference external" href="https://docs.python.org/3.9/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – One of <cite>local</cite>, <cite>web</cite>, or <cite>relative</cite>.
+Defaults to <cite>“local”</cite>.</p></li>
+<li><p><strong>action</strong> (<a class="reference external" href="https://docs.python.org/3.9/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Either <cite>copy</cite>, <cite>move</cite> or <cite>asis</cite>.
+Defaults to <cite>“copy”</cite>.</p></li>
+<li><p><strong>ext</strong> (<a class="reference external" href="https://docs.python.org/3.9/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Use filepath extension when storing in cache.
+Defaults to <cite>False</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>database record of the new resource in cache</p>
+<dd class="field-even"><p>Database record of the new resource in cache</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="pybiocfilecache.db.html#pybiocfilecache.db.schema.Resource" title="pybiocfilecache.db.schema.Resource">Resource</a></p>
@@ -294,7 +297,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="pybiocfilecache.BiocFileCache.BiocFileCache.purge">
 <span class="sig-name descname"><span class="pre">purge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pybiocfilecache/BiocFileCache.html#BiocFileCache.purge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pybiocfilecache.BiocFileCache.BiocFileCache.purge" title="Permalink to this definition">#</a></dt>
-<dd><p>Remove all files from cache</p>
+<dd><p>Remove all files from cache.</p>
 </dd></dl>
 
 <dl class="py method">
