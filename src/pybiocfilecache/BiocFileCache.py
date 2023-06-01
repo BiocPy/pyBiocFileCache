@@ -125,7 +125,7 @@ class BiocFileCache:
         # exception is raised (such as if it is locked by another process) the
         # data essentially disappears to rpath with no way of retrieving its
         # location. Thus we add rpath to the cache first, then move the data
-        # into it so that the data at source dose not disappear if accessing
+        # into it so that the data at source does not disappear if accessing
         # the cache raises an exception.
         copy_or_move(str(fpath), rpath, rname, action)
 
