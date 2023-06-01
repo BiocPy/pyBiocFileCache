@@ -2,7 +2,6 @@
 Python Implementation of BiocFileCache
 """
 
-import logging
 import os
 from pathlib import Path
 from typing import List, Optional, Union
@@ -18,7 +17,12 @@ __author__ = "jkanche"
 __copyright__ = "jkanche"
 __license__ = "MIT"
 
-_logger = logging.getLogger(__name__)
+class NoFpathError(Exception):
+    """An error for when the source file does not exist."""
+
+
+class RnameExistsError(Exception):
+    """An error for when the key already exists in the cache."""
 
 
 class BiocFileCache:
@@ -74,33 +78,56 @@ class BiocFileCache:
 
         Returns:
             Resource: Database record of the new resource in cache
-        """
 
+        Raises:
+            NoFpathError
+                When the `fpath` does not exist.
+            RnameExistsError
+                When the `rname` already exists in the cache.
+            sqlalchemy exceptions
+                When something is up with the cache.
+        """
         if isinstance(fpath, str):
             fpath = Path(fpath)
 
         if not fpath.exists():
-            raise Exception(f"Resource at {fpath} does not exist.")
-
-        existing_cache = self.get(rname)
-        if existing_cache is not None:
-            _logger.info(f"File with {rname} already exists, updating instead")
-            return self.update(rname, fpath, action)
+            raise NoFpathError(f"Resource at {fpath} does not exist.")
 
         rid = generate_id()
-        rpath = f"{self.cache}/{rid}.{fpath.suffix}" if ext else f"{self.cache}/{rid}"
-
-        copy_or_move(str(fpath), rpath, rname, action)
+        rpath = f"{self.cache}/{rid}" + (f".{fpath.suffix}" if ext else "")
 
         # create new record in the database
         res = Resource(
-            **dict(rid=rid, rname=rname, rpath=rpath, rtype=rtype, fpath=str(fpath))
+            **dict(
+                rid=rid,
+                rname=rname,
+                rpath=rpath,
+                rtype=rtype,
+                fpath=str(fpath),
+            )
         )
 
+        # If this was higher up a parallel process could have added the key to
+        # the cache in the meantime as the above takes a bit, so checking here
+        # reduces the odds of this happening
+        # Redirecting to update was removed as it is a scenario better handled
+        # by the caller.
+        if self.get(rname) is not None:
+            raise RnameExistsError("Resource already exists in cache!")
+
         with self.sessionLocal() as session:
-            session.add(res)
+            session.add(res)  # type: ignore
             session.commit()
-            session.refresh(res)
+            session.refresh(res)  # type: ignore
+
+        # In the "move" scenario if we move the file to rpath before rpath is
+        # part of the cache and then when trying to add it to the cache an
+        # exception is raised (such as if it is locked by another process) the
+        # data essentially disappears to rpath with no way of retrieving its
+        # location. Thus we add rpath to the cache first, then move the data
+        # into it so that the data at source dose not disappear if accessing
+        # the cache raises an exception.
+        copy_or_move(str(fpath), rpath, rname, action)
 
         return res
 
