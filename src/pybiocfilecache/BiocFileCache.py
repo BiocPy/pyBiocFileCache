@@ -162,7 +162,12 @@ class BiocFileCache:
         Returns:
             res (Resource, optional): The `Resource` for the `rname` if any.
         """
-        return session.query(Resource).filter(Resource.rname == rname).first()
+        resource: Resource = session.query(Resource).filter(Resource.rname == rname).first()
+
+        while not Path(str(resource.rpath)).exists():
+            sleep(0.1)
+
+        return resource
 
     def get(self, rname: str) -> Optional[Resource]:
         """get resource by name from cache.
