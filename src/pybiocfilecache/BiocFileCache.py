@@ -167,8 +167,8 @@ class BiocFileCache:
             session.query(Resource).filter(Resource.rname == rname).first()
         )
 
-        # Resource may exist but rpath could still be being moved/copied into
-        # by add, wait until it exists
+        # `Resource` may exist but `rpath` could still be being moved/copied
+        # into by `add`, wait until `rpath` exists
         while not Path(str(resource.rpath)).exists():
             sleep(0.1)
 
