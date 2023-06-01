@@ -15,4 +15,8 @@ except PackageNotFoundError:  # pragma: no cover
 finally:
     del version, PackageNotFoundError
 
-from .BiocFileCache import BiocFileCache
+from .BiocFileCache import BiocFileCache as BiocFileCache
+from .BiocFileCache import NoFpathError as NoFpathError
+from .BiocFileCache import RnameExistsError as RnameExistsError
+from .db.schema import Metadata as Metadata
+from .db.schema import Resource as Resource
