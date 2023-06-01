@@ -4,6 +4,7 @@ Python Implementation of BiocFileCache
 
 import os
 from pathlib import Path
+from time import sleep
 from typing import List, Optional, Union
 
 from sqlalchemy import func
@@ -162,8 +163,12 @@ class BiocFileCache:
         Returns:
             res (Resource, optional): The `Resource` for the `rname` if any.
         """
-        resource: Resource = session.query(Resource).filter(Resource.rname == rname).first()
+        resource: Resource = (
+            session.query(Resource).filter(Resource.rname == rname).first()
+        )
 
+        # Resource may exist but rpath could still be being moved/copied into
+        # by add, wait until it exists
         while not Path(str(resource.rpath)).exists():
             sleep(0.1)
 
