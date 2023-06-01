@@ -163,14 +163,15 @@ class BiocFileCache:
         Returns:
             res (Resource, optional): The `Resource` for the `rname` if any.
         """
-        resource: Resource = (
+        resource: Optional[Resource] = (
             session.query(Resource).filter(Resource.rname == rname).first()
         )
 
-        # `Resource` may exist but `rpath` could still be being moved/copied
-        # into by `add`, wait until `rpath` exists
-        while not Path(str(resource.rpath)).exists():
-            sleep(0.1)
+        if resource is not None:
+            # `Resource` may exist but `rpath` could still be being
+            # moved/copied into by `add`, wait until `rpath` exists
+            while not Path(str(resource.rpath)).exists():
+                sleep(0.1)
 
         return resource
 
