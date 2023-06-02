@@ -84,11 +84,7 @@ class BiocFileCache:
             NoFpathError
                 When the `fpath` does not exist.
             RnameExistsError
-                When the `rname` already exists in the cache. If you choose to
-                instead get the file from the cache when this error is raised 
-                make sure to check the `rpath` exists first if it could have
-                been added by a parallel process as the key may exist but the
-                file is in the process of being copied or moved still.
+                When the `rname` already exists in the cache.
             sqlalchemy exceptions
                 When something is up with the cache.
         """
