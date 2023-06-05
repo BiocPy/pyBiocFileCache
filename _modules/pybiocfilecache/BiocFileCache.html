@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 6.1.3 and Furo 2022.12.07 -->
-        <title>pybiocfilecache.BiocFileCache - pyBiocFileCache 0.2.1 documentation</title>
+    <!-- Generated with Sphinx 7.0.1 and Furo 2023.05.20 -->
+        <title>pybiocfilecache.BiocFileCache - pyBiocFileCache 0.2.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=e6660623a769aa55fea372102b9bf3151b292993" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -122,7 +122,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.2.1 documentation</div></a>
+      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.2.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -145,7 +145,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
   
-  <span class="sidebar-brand-text">pyBiocFileCache 0.2.1 documentation</span>
+  <span class="sidebar-brand-text">pyBiocFileCache 0.2.2 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -158,8 +158,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/modules.html">Module Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../api/pybiocfilecache.html">pybiocfilecache package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/modules.html">Module Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Module Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../api/pybiocfilecache.html">pybiocfilecache package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of pybiocfilecache package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../api/pybiocfilecache.db.html">pybiocfilecache.db package</a></li>
 </ul>
 </li>
@@ -203,9 +203,9 @@
 <span class="sd">Python Implementation of BiocFileCache</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span><span class="p">,</span> <span class="n">time</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">func</span>
@@ -214,12 +214,11 @@
 <span class="kn">from</span> <span class="nn">.db</span> <span class="kn">import</span> <span class="n">create_schema</span>
 <span class="kn">from</span> <span class="nn">.db.schema</span> <span class="kn">import</span> <span class="n">Resource</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">copy_or_move</span><span class="p">,</span> <span class="n">create_tmp_dir</span><span class="p">,</span> <span class="n">generate_id</span>
+<span class="kn">from</span> <span class="nn">._exceptions</span> <span class="kn">import</span> <span class="n">NoFpathError</span><span class="p">,</span> <span class="n">RnameExistsError</span><span class="p">,</span> <span class="n">RpathTimeoutError</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;jkanche&quot;</span>
 <span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;jkanche&quot;</span>
 <span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;MIT&quot;</span>
-
-<span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="BiocFileCache"><a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache">[docs]</a><span class="k">class</span> <span class="nc">BiocFileCache</span><span class="p">:</span>
@@ -231,7 +230,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize BiocFileCache.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            cacheDirOrPath (Union[str, Path], optional): Path to cache</span>
+<span class="sd">            cacheDirOrPath (Union[str, Path], optional): Path to cache.</span>
 <span class="sd">                directory. Defaults to tmp location, `create_tmp_dir()`.</span>
 
 <span class="sd">        Raises:</span>
@@ -266,42 +265,56 @@
 <span class="sd">        Args:</span>
 <span class="sd">            rname (str): Name of the resource to add to cache.</span>
 <span class="sd">            fpath (Union[str, Path]): Location of the resource.</span>
-<span class="sd">            rtype (str, optional): One of `local`, `web`, or `relative`.</span>
+<span class="sd">            rtype (str, optional): One of `&quot;local&quot;`, `&quot;web&quot;`, or `&quot;relative&quot;`.</span>
 <span class="sd">                Defaults to `&quot;local&quot;`.</span>
-<span class="sd">            action (str, optional): Either `copy`, `move` or `asis`.</span>
+<span class="sd">            action (str, optional): Either `&quot;copy&quot;`, `&quot;move&quot;` or `&quot;asis&quot;`.</span>
 <span class="sd">                Defaults to `&quot;copy&quot;`.</span>
 <span class="sd">            ext (bool, optional): Use filepath extension when storing in cache.</span>
 <span class="sd">                Defaults to `False`.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Resource: Database record of the new resource in cache</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            Resource: Database record of the new resource in cache.</span>
 
+<span class="sd">        Raises:</span>
+<span class="sd">            NoFpathError: When the `fpath` does not exist.</span>
+<span class="sd">            RnameExistsError: When the `rname` already exists in the cache.</span>
+<span class="sd">            sqlalchemy exceptions: When something is up with the cache.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">fpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fpath</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resource at </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2"> does not exist.&quot;</span><span class="p">)</span>
-
-        <span class="n">existing_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rname</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">existing_cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File with </span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2"> already exists, updating instead&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">rname</span><span class="p">,</span> <span class="n">fpath</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">NoFpathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resource at </span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2"> does not exist.&quot;</span><span class="p">)</span>
 
         <span class="n">rid</span> <span class="o">=</span> <span class="n">generate_id</span><span class="p">()</span>
-        <span class="n">rpath</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">rid</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">fpath</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">ext</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">rid</span><span class="si">}</span><span class="s2">&quot;</span>
-
-        <span class="n">copy_or_move</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">fpath</span><span class="p">),</span> <span class="n">rpath</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+        <span class="n">rpath</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">rid</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">fpath</span><span class="o">.</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">ext</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="c1"># create new record in the database</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span>
-            <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">rid</span><span class="o">=</span><span class="n">rid</span><span class="p">,</span> <span class="n">rname</span><span class="o">=</span><span class="n">rname</span><span class="p">,</span> <span class="n">rpath</span><span class="o">=</span><span class="n">rpath</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="n">rtype</span><span class="p">,</span> <span class="n">fpath</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">fpath</span><span class="p">))</span>
+            <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">rid</span><span class="o">=</span><span class="n">rid</span><span class="p">,</span> <span class="n">rname</span><span class="o">=</span><span class="n">rname</span><span class="p">,</span> <span class="n">rpath</span><span class="o">=</span><span class="n">rpath</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="n">rtype</span><span class="p">,</span> <span class="n">fpath</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">fpath</span><span class="p">),)</span>
         <span class="p">)</span>
+
+        <span class="c1"># If this was higher up a parallel process could have added the key to</span>
+        <span class="c1"># the cache in the meantime as the above takes a bit, so checking here</span>
+        <span class="c1"># reduces the odds of this happening</span>
+        <span class="c1"># Redirecting to update was removed as it is a scenario better handled</span>
+        <span class="c1"># by the caller.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rname</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RnameExistsError</span><span class="p">(</span><span class="s2">&quot;Resource already exists in cache!&quot;</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessionLocal</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
             <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
             <span class="n">session</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+        <span class="c1"># In the &quot;move&quot; scenario if we move the file to rpath before rpath is</span>
+        <span class="c1"># part of the cache and then when trying to add it to the cache an</span>
+        <span class="c1"># exception is raised (such as if it is locked by another process) the</span>
+        <span class="c1"># data essentially disappears to rpath with no way of retrieving its</span>
+        <span class="c1"># location. Thus we add rpath to the cache first, then move the data</span>
+        <span class="c1"># into it so that the data at source does not disappear if accessing</span>
+        <span class="c1"># the cache raises an exception.</span>
+        <span class="n">copy_or_move</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">fpath</span><span class="p">),</span> <span class="n">rpath</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">res</span></div>
 
@@ -309,11 +322,11 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Search cache for a resource.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            query (str): query to search</span>
+<span class="sd">            query (str): query or keywords to search.</span>
 <span class="sd">            field (str, optional): Field to search. Defaults to &quot;rname&quot;.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            List[Resource]: list of matching resources from cache</span>
+<span class="sd">            List[Resource]: list of matching resources from cache.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessionLocal</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">(</span>
@@ -330,15 +343,32 @@
 <span class="sd">            rname (str): The `rname` of the `Resource` to get.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            res (Resource, optional): The `Resource` for the `rname` if any.</span>
+<span class="sd">            (Resource, optional): The `Resource` for the `rname` if any.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Resource</span><span class="o">.</span><span class="n">rname</span> <span class="o">==</span> <span class="n">rname</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">resource</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Resource</span><span class="o">.</span><span class="n">rname</span> <span class="o">==</span> <span class="n">rname</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">resource</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># `Resource` may exist but `rpath` could still be being</span>
+            <span class="c1"># moved/copied into by `add`, wait until `rpath` exists</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="mi">30</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">rpath</span><span class="p">))</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span> <span class="o">&gt;=</span> <span class="n">timeout</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">RpathTimeoutError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;For resource: &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; the rpath does not exist &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;after </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2"> seconds.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">resource</span>
 
 <div class="viewcode-block" id="BiocFileCache.get"><a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;get resource by name from cache.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            rname (str): Name of the file to search</span>
+<span class="sd">            rname (str): Name of the file to search.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Optional[Resource]: matched resource from cache if exists.</span>
@@ -349,14 +379,16 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a resource from cache by name.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            rname (str): Name of the resource to remove</span>
+<span class="sd">            rname (str): Name of the resource to remove.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessionLocal</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
-            <span class="n">res</span><span class="p">:</span> <span class="n">Resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">rname</span><span class="p">)</span>
-            <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-            <span class="c1"># remove file</span>
-            <span class="n">Path</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">rpath</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
+            <span class="n">res</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">rname</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                <span class="c1"># remove file</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">rpath</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="BiocFileCache.purge"><a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove all files from cache.&quot;&quot;&quot;</span>
@@ -369,12 +401,12 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update a resource in cache.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            rname (str): name of the resource in cache</span>
+<span class="sd">            rname (str): name of the resource in cache.</span>
 <span class="sd">            fpath (Union[str, Path]): new resource to replace existing file in cache.</span>
-<span class="sd">            action (str, optional): either copy of move. defaults to copy</span>
+<span class="sd">            action (str, optional): either copy of move. defaults to copy.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Resource: Updated resource record in cache</span>
+<span class="sd">            Resource: Updated resource record in cache.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -384,16 +416,21 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File: &#39;</span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&#39; does not exist&quot;</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessionLocal</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
-            <span class="n">res</span><span class="p">:</span> <span class="n">Resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">rname</span><span class="p">)</span>
-            <span class="c1"># copy the file to cache</span>
-            <span class="n">copy_or_move</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">fpath</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">rpath</span><span class="p">),</span> <span class="n">rname</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
-            <span class="c1"># TODO: is this needed?</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">create_time</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">access_time</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">last_modified_time</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-            <span class="n">session</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-            <span class="n">session</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">rname</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">res</span></div></div>
+            <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># copy the file to cache</span>
+                <span class="n">copy_or_move</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">fpath</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">rpath</span><span class="p">),</span> <span class="n">rname</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">access_time</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">last_modified_time</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># technically an error since update shouldn&#39;t be called on</span>
+                <span class="c1"># non-existent resources in cache.</span>
+                <span class="c1"># but lets just add it to the cache.</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rname</span><span class="o">=</span><span class="n">rname</span><span class="p">,</span> <span class="n">fpath</span><span class="o">=</span><span class="n">fpath</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">res</span></div></div>
 </pre></div>
         </article>
       </div>
