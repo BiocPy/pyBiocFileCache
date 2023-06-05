@@ -4,7 +4,7 @@ Python Implementation of BiocFileCache
 
 import os
 from pathlib import Path
-from time import sleep
+from time import sleep, time
 from typing import List, Optional, Union
 
 from sqlalchemy import func
@@ -24,6 +24,9 @@ class NoFpathError(Exception):
 
 class RnameExistsError(Exception):
     """An error for when the key already exists in the cache."""
+
+class RpathTimeoutError(Exception):
+    """An error for when the 'rpath' does not exist after a timeout."""
 
 
 class BiocFileCache:
@@ -166,7 +169,14 @@ class BiocFileCache:
         if resource is not None:
             # `Resource` may exist but `rpath` could still be being
             # moved/copied into by `add`, wait until `rpath` exists
+            start = time()
+            timeout = 30
             while not Path(str(resource.rpath)).exists():
+                if time() - start >= timeout:
+                    raise RpathTimeoutError(
+                        f"For resource: '{rname}' the rpath does not exist "
+                        f"after {timeout} seconds."
+                    )
                 sleep(0.1)
 
         return resource
