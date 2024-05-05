@@ -9,7 +9,7 @@ import sys
 
 
 def create_tmp_dir() -> str:
-    """create a temporary directory.
+    """Create a temporary directory.
 
     Returns:
         str: path to the directory
@@ -57,7 +57,7 @@ def copy_or_move(
 
 
 def setup_logging(loglevel):
-    """Setup basic logging
+    """Setup basic logging.
 
     Args:
       loglevel (int): minimum loglevel for emitting messages
