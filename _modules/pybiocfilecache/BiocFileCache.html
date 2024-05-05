@@ -1,14 +1,14 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" data-content_root="../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 7.0.1 and Furo 2023.05.20 -->
-        <title>pybiocfilecache.BiocFileCache - pyBiocFileCache 0.2.2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=e6660623a769aa55fea372102b9bf3151b292993" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.04.27 -->
+        <title>pybiocfilecache.BiocFileCache - pyBiocFileCache 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=437aa6ec" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
 
@@ -111,6 +111,8 @@
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
 
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
 
 
 <div class="page">
@@ -122,7 +124,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.2.2 documentation</div></a>
+      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.3.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -145,7 +147,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
   
-  <span class="sidebar-brand-text">pyBiocFileCache 0.2.2 documentation</span>
+  <span class="sidebar-brand-text">pyBiocFileCache 0.3.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -197,11 +199,9 @@
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
-        <article role="main">
+        <article role="main" id="furo-main-content">
           <h1>Source code for pybiocfilecache.BiocFileCache</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Python Implementation of BiocFileCache</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Python Implementation of BiocFileCache.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -221,10 +221,10 @@
 <span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;MIT&quot;</span>
 
 
-<div class="viewcode-block" id="BiocFileCache"><a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache">[docs]</a><span class="k">class</span> <span class="nc">BiocFileCache</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Class to manage and cache files.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BiocFileCache">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache">[docs]</a>
+<span class="k">class</span> <span class="nc">BiocFileCache</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to manage and cache files.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cacheDirOrPath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="n">create_tmp_dir</span><span class="p">()):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize BiocFileCache.</span>
@@ -252,7 +252,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">db_cache</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="si">}</span><span class="s2">/BiocFileCache.sqlite&quot;</span>
         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessionLocal</span><span class="p">)</span> <span class="o">=</span> <span class="n">create_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_cache</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BiocFileCache.add"><a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span>
+<div class="viewcode-block" id="BiocFileCache.add">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.add">[docs]</a>
+    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">fpath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
@@ -291,7 +293,13 @@
 
         <span class="c1"># create new record in the database</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span>
-            <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">rid</span><span class="o">=</span><span class="n">rid</span><span class="p">,</span> <span class="n">rname</span><span class="o">=</span><span class="n">rname</span><span class="p">,</span> <span class="n">rpath</span><span class="o">=</span><span class="n">rpath</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="n">rtype</span><span class="p">,</span> <span class="n">fpath</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">fpath</span><span class="p">),)</span>
+            <span class="o">**</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">rid</span><span class="o">=</span><span class="n">rid</span><span class="p">,</span>
+                <span class="n">rname</span><span class="o">=</span><span class="n">rname</span><span class="p">,</span>
+                <span class="n">rpath</span><span class="o">=</span><span class="n">rpath</span><span class="p">,</span>
+                <span class="n">rtype</span><span class="o">=</span><span class="n">rtype</span><span class="p">,</span>
+                <span class="n">fpath</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">fpath</span><span class="p">),</span>
+            <span class="p">)</span>
         <span class="p">)</span>
 
         <span class="c1"># If this was higher up a parallel process could have added the key to</span>
@@ -318,7 +326,10 @@
 
         <span class="k">return</span> <span class="n">res</span></div>
 
-<div class="viewcode-block" id="BiocFileCache.query"><a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;rname&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="BiocFileCache.query">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.query">[docs]</a>
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;rname&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Search cache for a resource.</span>
 
 <span class="sd">        Args:</span>
@@ -334,6 +345,7 @@
                 <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Resource</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">ilike</span><span class="p">(</span><span class="s2">&quot;%</span><span class="si">{}</span><span class="s2">%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">)))</span>
                 <span class="o">.</span><span class="n">all</span><span class="p">()</span>
             <span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a resource with `rname` from given `Session`.</span>
@@ -364,8 +376,10 @@
 
         <span class="k">return</span> <span class="n">resource</span>
 
-<div class="viewcode-block" id="BiocFileCache.get"><a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;get resource by name from cache.</span>
+<div class="viewcode-block" id="BiocFileCache.get">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get resource by name from cache.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            rname (str): Name of the file to search.</span>
@@ -375,7 +389,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sessionLocal</span><span class="p">(),</span> <span class="n">rname</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BiocFileCache.remove"><a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="BiocFileCache.remove">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.remove">[docs]</a>
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a resource from cache by name.</span>
 
 <span class="sd">        Args:</span>
@@ -390,12 +407,18 @@
                 <span class="c1"># remove file</span>
                 <span class="n">Path</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">rpath</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="BiocFileCache.purge"><a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="BiocFileCache.purge">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.purge">[docs]</a>
+    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove all files from cache.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">scandir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">path</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BiocFileCache.update"><a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
+
+<div class="viewcode-block" id="BiocFileCache.update">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.BiocFileCache.BiocFileCache.update">[docs]</a>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fpath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">action</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;copy&quot;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Resource</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update a resource in cache.</span>
@@ -430,7 +453,9 @@
                 <span class="c1"># non-existent resources in cache.</span>
                 <span class="c1"># but lets just add it to the cache.</span>
                 <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rname</span><span class="o">=</span><span class="n">rname</span><span class="p">,</span> <span class="n">fpath</span><span class="o">=</span><span class="n">fpath</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">res</span></div></div>
+            <span class="k">return</span> <span class="n">res</span></div>
+</div>
+
 </pre></div>
         </article>
       </div>
@@ -463,9 +488,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
-    <script src="../../_static/scripts/furo.js"></script>
+</div><script src="../../_static/documentation_options.js?v=e259d695"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/scripts/furo.js?v=4e2eecee"></script>
     </body>
 </html>

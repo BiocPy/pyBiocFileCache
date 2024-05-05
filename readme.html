@@ -1,15 +1,15 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" data-content_root="./">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="License" href="license.html" /><link rel="prev" title="pyBiocFileCache" href="index.html" />
 
-    <!-- Generated with Sphinx 7.0.1 and Furo 2023.05.20 -->
-        <title>pyBiocFileCache - pyBiocFileCache 0.2.2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=e6660623a769aa55fea372102b9bf3151b292993" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.04.27 -->
+        <title>pyBiocFileCache - pyBiocFileCache 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=437aa6ec" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=36a5483c" />
     
     
 
@@ -112,6 +112,8 @@
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
 
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
 
 
 <div class="page">
@@ -123,7 +125,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">pyBiocFileCache 0.2.2 documentation</div></a>
+      <a href="index.html"><div class="brand">pyBiocFileCache 0.3.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -146,7 +148,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">pyBiocFileCache 0.2.2 documentation</span>
+  <span class="sidebar-brand-text">pyBiocFileCache 0.3.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -199,19 +201,22 @@
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
-        <article role="main">
-          <section id="pybiocfilecache">
-<h1>pyBiocFileCache<a class="headerlink" href="#pybiocfilecache" title="Permalink to this heading">#</a></h1>
+        <article role="main" id="furo-main-content">
+          <p><a class="reference external" href="https://pyscaffold.org/"><img alt="Project generated with PyScaffold" src="https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold" /></a>
+<a class="reference external" href="https://pypi.org/project/pyBiocFileCache/"><img alt="PyPI-Server" src="https://img.shields.io/pypi/v/pyBiocFileCache.svg" /></a>
+<img alt="Unit tests" src="https://github.com/BiocPy/pyBiocFileCache/actions/workflows/pypi-test.yml/badge.svg" /></p>
+<section id="pybiocfilecache">
+<h1>pyBiocFileCache<a class="headerlink" href="#pybiocfilecache" title="Link to this heading">¶</a></h1>
 <p>File system based cache for resources &amp; metadata. Compatible with <a class="reference external" href="https://github.com/Bioconductor/BiocFileCache">BiocFileCache R package</a></p>
 <p><em><strong>Note: Package is in development. Use with caution!!</strong></em></p>
 <section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h2>
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
 <p>Package is published to <a class="reference external" href="https://pypi.org/project/pyBiocFileCache/">PyPI</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pybiocfilecache</span>
 </pre></div>
 </div>
 <section id="initialize-a-cache-directory">
-<h3>Initialize a cache directory<a class="headerlink" href="#initialize-a-cache-directory" title="Permalink to this heading">#</a></h3>
+<h3>Initialize a cache directory<a class="headerlink" href="#initialize-a-cache-directory" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pybiocfilecache</span> <span class="kn">import</span> <span class="n">BiocFileCache</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
@@ -229,7 +234,7 @@
 </section>
 </section>
 <section id="add-a-resource-to-cache">
-<h2>Add a resource to cache<a class="headerlink" href="#add-a-resource-to-cache" title="Permalink to this heading">#</a></h2>
+<h2>Add a resource to cache<a class="headerlink" href="#add-a-resource-to-cache" title="Link to this heading">¶</a></h2>
 <p>(for testing use the temp files in the <code class="docutils literal notranslate"><span class="pre">tests/data</span></code> directory)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rec</span> <span class="o">=</span> <span class="n">bfc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;test1&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/test1.txt&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
@@ -237,34 +242,34 @@
 </div>
 </section>
 <section id="get-resource-from-cache">
-<h2>Get resource from cache<a class="headerlink" href="#get-resource-from-cache" title="Permalink to this heading">#</a></h2>
+<h2>Get resource from cache<a class="headerlink" href="#get-resource-from-cache" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rec</span> <span class="o">=</span> <span class="n">bfc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;test1&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="remove-resource-from-cache">
-<h2>Remove resource from cache<a class="headerlink" href="#remove-resource-from-cache" title="Permalink to this heading">#</a></h2>
+<h2>Remove resource from cache<a class="headerlink" href="#remove-resource-from-cache" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rec</span> <span class="o">=</span> <span class="n">bfc</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;test1&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="update-resource-in-cache">
-<h2>Update resource in cache<a class="headerlink" href="#update-resource-in-cache" title="Permalink to this heading">#</a></h2>
+<h2>Update resource in cache<a class="headerlink" href="#update-resource-in-cache" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rec</span> <span class="o">=</span> <span class="n">bfc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;test1&quot;</span><span class="n">m</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;test2.txt&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="purge-the-cache">
-<h2>purge the cache<a class="headerlink" href="#purge-the-cache" title="Permalink to this heading">#</a></h2>
+<h2>purge the cache<a class="headerlink" href="#purge-the-cache" title="Link to this heading">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bfc</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
 </pre></div>
 </div>
 <!-- pyscaffold-notes --></section>
 <section id="note">
-<h2>Note<a class="headerlink" href="#note" title="Permalink to this heading">#</a></h2>
+<h2>Note<a class="headerlink" href="#note" title="Link to this heading">¶</a></h2>
 <p>This project has been set up using PyScaffold 4.1. For details and usage
 information on PyScaffold see https://pyscaffold.org/.</p>
 </section>
@@ -347,9 +352,9 @@ information on PyScaffold see https://pyscaffold.org/.</p>
       
     </aside>
   </div>
-</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    <script src="_static/scripts/furo.js"></script>
+</div><script src="_static/documentation_options.js?v=e259d695"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=4e2eecee"></script>
     </body>
 </html>

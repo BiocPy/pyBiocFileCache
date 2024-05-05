@@ -1,3 +1,7 @@
+[![Project generated with PyScaffold](https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold)](https://pyscaffold.org/)
+[![PyPI-Server](https://img.shields.io/pypi/v/pyBiocFileCache.svg)](https://pypi.org/project/pyBiocFileCache/)
+![Unit tests](https://github.com/BiocPy/pyBiocFileCache/actions/workflows/pypi-test.yml/badge.svg)
+
 # pyBiocFileCache
 
 File system based cache for resources & metadata. Compatible with [BiocFileCache R package](https://github.com/Bioconductor/BiocFileCache)
@@ -12,7 +16,7 @@ Package is published to [PyPI](https://pypi.org/project/pyBiocFileCache/)
 pip install pybiocfilecache
 ```
 
-#### Initialize a cache directory 
+#### Initialize a cache directory
 
 ```
 from pybiocfilecache import BiocFileCache
