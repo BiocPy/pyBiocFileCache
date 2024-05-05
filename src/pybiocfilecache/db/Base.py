@@ -13,7 +13,7 @@ Base = declarative_base()
 
 
 def create_schema(cache_dir: str) -> Tuple[Engine, sessionmaker]:
-    """Create the schema in the sqlite database
+    """Create the schema in the sqlite database.
 
     Args:
         cache_dir (str): Location where the cache directory

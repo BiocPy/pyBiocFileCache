@@ -16,7 +16,7 @@ Package is published to [PyPI](https://pypi.org/project/pyBiocFileCache/)
 pip install pybiocfilecache
 ```
 
-#### Initialize a cache directory 
+#### Initialize a cache directory
 
 ```
 from pybiocfilecache import BiocFileCache

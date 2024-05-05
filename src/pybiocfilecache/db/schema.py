@@ -33,4 +33,3 @@ class Resource(Base):
 
     def __repr__(self):
         return "<Resource(id='%s', rname='%s')>" % (self.id, self.rname)
-

@@ -1,6 +1,4 @@
-"""
-Python Implementation of BiocFileCache
-"""
+"""Python Implementation of BiocFileCache."""
 
 import os
 from pathlib import Path
@@ -21,9 +19,7 @@ __license__ = "MIT"
 
 
 class BiocFileCache:
-    """
-    Class to manage and cache files.
-    """
+    """Class to manage and cache files."""
 
     def __init__(self, cacheDirOrPath: Union[str, Path] = create_tmp_dir()):
         """Initialize BiocFileCache.
@@ -90,7 +86,13 @@ class BiocFileCache:
 
         # create new record in the database
         res = Resource(
-            **dict(rid=rid, rname=rname, rpath=rpath, rtype=rtype, fpath=str(fpath),)
+            **dict(
+                rid=rid,
+                rname=rname,
+                rpath=rpath,
+                rtype=rtype,
+                fpath=str(fpath),
+            )
         )
 
         # If this was higher up a parallel process could have added the key to
@@ -164,7 +166,7 @@ class BiocFileCache:
         return resource
 
     def get(self, rname: str) -> Optional[Resource]:
-        """get resource by name from cache.
+        """Get resource by name from cache.
 
         Args:
             rname (str): Name of the file to search.
