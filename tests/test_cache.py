@@ -27,10 +27,10 @@ def test_add_get_operations():
     rec2 = bfc.get("test2")
     assert rec2 is not None
 
-    frec1 = open(rec1.rpath, "r").read()
+    frec1 = open(rec1.rpath, "r").read().strip()
     assert frec1 == "test1"
 
-    frec2 = open(rec2.rpath, "r").read()
+    frec2 = open(rec2.rpath, "r").read().strip()
     assert frec2 == "test2"
 
     bfc.purge()
