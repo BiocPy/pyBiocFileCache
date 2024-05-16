@@ -37,7 +37,7 @@ def test_add_get_operations():
     rec3 = bfc.get("test3_asis")
     assert rec3 is not None
     assert rec3.rpath == os.getcwd() + "/tests/data/test2.txt"
-    
+
     frec3 = open(rec3.rpath, "r").read().strip()
     assert frec3 == "test2"
 
