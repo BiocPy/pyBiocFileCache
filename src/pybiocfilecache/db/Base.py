@@ -1,9 +1,10 @@
+from typing import Tuple
+
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 
 # from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, declarative_base
-from typing import Tuple
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 __author__ = "jkanche"
 __copyright__ = "jkanche"
@@ -16,10 +17,11 @@ def create_schema(cache_dir: str) -> Tuple[Engine, sessionmaker]:
     """Create the schema in the sqlite database.
 
     Args:
-        cache_dir (str): Location where the cache directory
+        cache_dir:
+            Location where the cache directory.
 
     Returns:
-        a tuple of sqlalchemy engine and session maker
+        A tuple of sqlalchemy engine and session maker.
     """
     try:
         engine = create_engine(
