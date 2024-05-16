@@ -96,7 +96,11 @@ class BiocFileCache:
             raise NoFpathError(f"Resource at '{fpath}' does not exist.")
 
         rid = generate_id()
-        rpath = f"{self.cache}/{rid}" + (f".{fpath.suffix}" if ext else "")
+        rpath = (
+            f"{self.cache}/{rid}" + (f".{fpath.suffix}" if ext else "")
+            if action != "asis"
+            else str(fpath)
+        )
 
         # create new record in the database
         res = Resource(
@@ -255,8 +259,12 @@ class BiocFileCache:
             res = self._get(session, rname)
 
             if res is not None:
-                # copy the file to cache
-                copy_or_move(str(fpath), str(res.rpath), rname, action)
+                if action != "asis":
+                    # copy the file to cache
+                    copy_or_move(str(fpath), str(res.rpath), rname, action)
+                else:
+                    res.rpath = str(fpath)
+
                 res.access_time = res.last_modified_time = func.now()
                 session.merge(res)
                 session.commit()
