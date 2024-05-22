@@ -17,8 +17,8 @@ finally:
 
 from .BiocFileCache import BiocFileCache as BiocFileCache
 
-from .db.schema import Metadata as Metadata
-from .db.schema import Resource as Resource
+from .db.db_config import Metadata as Metadata
+from .db.db_config import Resource as Resource
 
 from ._exceptions import NoFpathError as NoFpathError
 from ._exceptions import RnameExistsError as RnameExistsError
