@@ -9,8 +9,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from ._exceptions import NoFpathError, RnameExistsError, RpathTimeoutError
-from .db import create_schema
-from .db.schema import Resource
+from .db.db_config import create_schema, Resource
 from .utils import copy_or_move, create_tmp_dir, generate_id
 
 __author__ = "Jayaram Kancherla"
