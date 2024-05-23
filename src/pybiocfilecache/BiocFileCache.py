@@ -3,17 +3,16 @@
 import os
 from pathlib import Path
 from time import sleep, time
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from .db import create_schema
-from .db.schema import Resource
-from .utils import copy_or_move, create_tmp_dir, generate_id
 from ._exceptions import NoFpathError, RnameExistsError, RpathTimeoutError
+from .db.db_config import create_schema, Resource
+from .utils import copy_or_move, create_tmp_dir, generate_id
 
-__author__ = "jkanche"
+__author__ = "Jayaram Kancherla"
 __copyright__ = "jkanche"
 __license__ = "MIT"
 
@@ -25,8 +24,10 @@ class BiocFileCache:
         """Initialize BiocFileCache.
 
         Args:
-            cacheDirOrPath (Union[str, Path], optional): Path to cache.
-                directory. Defaults to tmp location, `create_tmp_dir()`.
+            cacheDirOrPath:
+                Path to cache directory.
+
+                Defaults to tmp location, :py:func:`~.utils.create_tmp_dir`.
 
         Raises:
             Exception: Failed to initialize cache.
@@ -51,38 +52,54 @@ class BiocFileCache:
         self,
         rname: str,
         fpath: Union[str, Path],
-        rtype: str = "local",
-        action: str = "copy",
+        rtype: Literal["local", "web", "relative"] = "local",
+        action: Literal["copy", "move", "asis"] = "copy",
         ext: bool = False,
     ) -> Resource:
         """Add a resource from the provided `fpath` to cache as `rname`.
 
         Args:
-            rname (str): Name of the resource to add to cache.
-            fpath (Union[str, Path]): Location of the resource.
-            rtype (str, optional): One of `"local"`, `"web"`, or `"relative"`.
-                Defaults to `"local"`.
-            action (str, optional): Either `"copy"`, `"move"` or `"asis"`.
-                Defaults to `"copy"`.
-            ext (bool, optional): Use filepath extension when storing in cache.
+            rname:
+                Name of the resource to add to cache.
+
+            fpath:
+                Location of the resource.
+
+            rtype:
+                One of ``local``, ``web``, or ``relative``.
+                Defaults to ``local``.
+
+            action:
+                Either ``copy``, ``move`` or ``asis``.
+                Defaults to ``copy``.
+
+            ext:
+                Whether to use filepath extension when storing in cache.
                 Defaults to `False`.
 
-        Returns:
-            Resource: Database record of the new resource in cache.
-
         Raises:
-            NoFpathError: When the `fpath` does not exist.
-            RnameExistsError: When the `rname` already exists in the cache.
-            sqlalchemy exceptions: When something is up with the cache.
+            NoFpathError:
+                When the `fpath` does not exist.
+
+            RnameExistsError:
+                When the `rname` already exists in the cache.
+                sqlalchemy exceptions: When something is up with the cache.
+
+        Returns:
+            Database record of the new resource in cache.
         """
         if isinstance(fpath, str):
             fpath = Path(fpath)
 
         if not fpath.exists():
-            raise NoFpathError(f"Resource at {fpath} does not exist.")
+            raise NoFpathError(f"Resource at '{fpath}' does not exist.")
 
         rid = generate_id()
-        rpath = f"{self.cache}/{rid}" + (f".{fpath.suffix}" if ext else "")
+        rpath = (
+            f"{self.cache}/{rid}" + (f".{fpath.suffix}" if ext else "")
+            if action != "asis"
+            else str(fpath)
+        )
 
         # create new record in the database
         res = Resource(
@@ -123,11 +140,15 @@ class BiocFileCache:
         """Search cache for a resource.
 
         Args:
-            query (str): query or keywords to search.
-            field (str, optional): Field to search. Defaults to "rname".
+            query:
+                Query string or keywords to search.
+
+            field:
+                Field to search.
+                Defaults to "rname".
 
         Returns:
-            List[Resource]: list of matching resources from cache.
+            List of matching resources from cache.
         """
         with self.sessionLocal() as session:
             return (
@@ -140,11 +161,14 @@ class BiocFileCache:
         """Get a resource with `rname` from given `Session`.
 
         Args:
-            session (Session): The `Session` object to use.
-            rname (str): The `rname` of the `Resource` to get.
+            session:
+                The `Session` object to use.
+
+            rname:
+                The `rname` of the `Resource` to get.
 
         Returns:
-            (Resource, optional): The `Resource` for the `rname` if any.
+            The `Resource` for the `rname` if available.
         """
         resource: Optional[Resource] = (
             session.query(Resource).filter(Resource.rname == rname).first()
@@ -169,10 +193,11 @@ class BiocFileCache:
         """Get resource by name from cache.
 
         Args:
-            rname (str): Name of the file to search.
+            rname:
+                Name of the file to search.
 
         Returns:
-            Optional[Resource]: matched resource from cache if exists.
+            Matched `Resource` from cache if exists.
         """
         return self._get(self.sessionLocal(), rname)
 
@@ -180,7 +205,8 @@ class BiocFileCache:
         """Remove a resource from cache by name.
 
         Args:
-            rname (str): Name of the resource to remove.
+            rname:
+                Name of the resource to remove.
         """
         with self.sessionLocal() as session:
             res: Optional[Resource] = self._get(session, rname)
@@ -196,18 +222,30 @@ class BiocFileCache:
         for file in os.scandir(self.cache):
             os.remove(file.path)
 
+        return True
+
     def update(
-        self, rname: str, fpath: Union[str, Path], action: str = "copy"
+        self,
+        rname: str,
+        fpath: Union[str, Path],
+        action: Literal["copy", "move", "asis"] = "copy",
     ) -> Resource:
         """Update a resource in cache.
 
         Args:
-            rname (str): name of the resource in cache.
-            fpath (Union[str, Path]): new resource to replace existing file in cache.
-            action (str, optional): either copy of move. defaults to copy.
+            rname:
+                Name of the resource in cache.
+
+            fpath:
+                New resource to replace existing file in cache.
+
+            action:
+                Either ``copy``, ``move`` or ``asis``.
+
+                Defaults to ``copy``.
 
         Returns:
-            Resource: Updated resource record in cache.
+            Updated resource record in cache.
         """
 
         if isinstance(fpath, str):
@@ -220,8 +258,12 @@ class BiocFileCache:
             res = self._get(session, rname)
 
             if res is not None:
-                # copy the file to cache
-                copy_or_move(str(fpath), str(res.rpath), rname, action)
+                if action != "asis":
+                    # copy the file to cache
+                    copy_or_move(str(fpath), str(res.rpath), rname, action)
+                else:
+                    res.rpath = str(fpath)
+
                 res.access_time = res.last_modified_time = func.now()
                 session.merge(res)
                 session.commit()
