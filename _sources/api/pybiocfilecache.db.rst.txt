@@ -4,18 +4,10 @@ pybiocfilecache.db package
 Submodules
 ----------
 
-pybiocfilecache.db.Base module
-------------------------------
+pybiocfilecache.db.db\_config module
+------------------------------------
 
-.. automodule:: pybiocfilecache.db.Base
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pybiocfilecache.db.schema module
---------------------------------
-
-.. automodule:: pybiocfilecache.db.schema
+.. automodule:: pybiocfilecache.db.db_config
    :members:
    :undoc-members:
    :show-inheritance:

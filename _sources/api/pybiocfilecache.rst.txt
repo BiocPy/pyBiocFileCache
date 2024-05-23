@@ -20,6 +20,14 @@ pybiocfilecache.BiocFileCache module
    :undoc-members:
    :show-inheritance:
 
+pybiocfilecache.const module
+----------------------------
+
+.. automodule:: pybiocfilecache.const
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 pybiocfilecache.utils module
 ----------------------------
 
