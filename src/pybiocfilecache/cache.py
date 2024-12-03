@@ -135,11 +135,62 @@ class BiocFileCache:
             raise InvalidRnameError(f"Resource name '{rname}' doesn't match pattern " f"'{self.config.rname_pattern}'")
 
     def _should_cleanup(self) -> bool:
-        """Check if cache cleanup should be performed."""
+        """Check if cache cleanup should be performed.
+
+        Returns:
+            True if `cleanup_interval` is set and time since last cleanup exceeds it.
+        """
+        if self.config.cleanup_interval is None:
+            return False
+
         return datetime.now() - self._last_cleanup > self.config.cleanup_interval
 
+    def cleanup(self) -> int:
+        """Remove expired resources from the cache.
+
+        Returns:
+            Number of resources removed.
+
+        Note:
+            - If `cleanup_interval` is None, this method will still run if called explicitly.
+            - Only removes resources with non-None expiration dates.
+        """
+        if not any([self.config.cleanup_interval, self._should_cleanup()]):
+            return 0  # Early return if automatic cleanup is disabled
+
+        removed = 0
+        with self.get_session() as session:
+            # Only query resources that have expiration dates
+            expired = (
+                session.query(Resource)
+                .filter(
+                    Resource.expires.isnot(None),  # Only check resources with expiration
+                    Resource.expires < datetime.now(),
+                )
+                .all()
+            )
+
+            for resource in expired:
+                try:
+                    Path(resource.rpath).unlink(missing_ok=True)
+                    session.delete(resource)
+                    removed += 1
+                except Exception as e:
+                    logger.error(f"Failed to remove expired resource: {resource.rname}", exc_info=e)
+
+            session.commit()
+
+        self._last_cleanup = datetime.now()
+        return removed
+
     def get(self, rname: str) -> Optional[Resource]:
-        """Get resource by name from cache."""
+        """Get resource by name from cache.
+
+        Args:
+            rname:
+                Name to identify the resource in cache.
+
+        """
         with self.get_session() as session:
             resource = session.query(Resource).filter(Resource.rname == rname).first()
 
@@ -175,18 +226,26 @@ class BiocFileCache:
 
         Args:
             rname:
-                Name of the resource to add to cache.
+                Name to identify the resource in cache.
 
             fpath:
-                Location of the resource.
+                Path to the source file.
 
             rtype:
+                Type of resource.
                 One of ``local``, ``web``, or ``relative``.
                 Defaults to ``local``.
 
             action:
-                Either ``copy``, ``move`` or ``asis``.
+                How to handle the file ("copy", "move", or "asis").
                 Defaults to ``copy``.
+
+            tags:
+                Optional list of tags for categorization.
+
+            expires:
+                Optional expiration datetime.
+                If None, resource never expires.
 
             ext:
                 Whether to use filepath extension when storing in cache.
@@ -271,10 +330,10 @@ class BiocFileCache:
 
         Args:
             rname:
-                Resource name.
+                Name to identify the resource in cache.
 
-            rtype:
-                Resource type.
+            fpath:
+                Path to the new source file.
 
             action:
                 Either ``copy``, ``move`` or ``asis``.
@@ -322,7 +381,7 @@ class BiocFileCache:
 
         Args:
             rname:
-                Name of the resource to remove
+                Name to identify the resource in cache.
 
         Raises:
             BiocCacheError: If resource removal fails
@@ -348,23 +407,24 @@ class BiocFileCache:
     def list_resources(
         self, tag: Optional[str] = None, rtype: Optional[str] = None, expired: Optional[bool] = None
     ) -> List[Resource]:
-        """List resources in cache with optional filtering.
+        """List resources in the cache with optional filtering.
 
         Args:
             tag:
-                Filter by tag.
+                Filter resources by tag.
 
             rtype:
-                Filter by resource type.
+                Filter resources by type.
 
             expired:
                 Filter by expiration status
                     True: only expired resources
                     False: only non-expired resources
                     None: all resources
+                Note: Resources with no expiration are always considered non-expired.
 
         Returns:
-            List of matching Resource objects.
+            List of Resource objects matching the filters
         """
         with self.get_session() as session:
             query = session.query(Resource)
@@ -375,38 +435,18 @@ class BiocFileCache:
                 query = query.filter(Resource.rtype == rtype)
             if expired is not None:
                 if expired:
-                    query = query.filter(Resource.expires < datetime.now())
+                    query = query.filter(
+                        Resource.expires.isnot(None),  # Only check resources with expiration
+                        Resource.expires < datetime.now(),
+                    )
                 else:
-                    query = query.filter((Resource.expires > datetime.now()) | (Resource.expires.is_(None)))
+                    query = query.filter(
+                        (Resource.expires.is_(None))  # Never expires
+                        | (Resource.expires > datetime.now())  # Not yet expired
+                    )
 
             resources = query.all()
             return [self._get_detached_resource(session, r) for r in resources]
-
-    def cleanup(self) -> int:
-        """Remove expired resources and update cleanup timestamp.
-
-        Returns:
-            Number of resources removed.
-
-        Note:
-            Updates `_last_cleanup` timestamp after completion.
-        """
-        removed = 0
-        with self.get_session() as session:
-            expired = session.query(Resource).filter(Resource.expires < datetime.now()).all()
-
-            for resource in expired:
-                try:
-                    Path(resource.rpath).unlink(missing_ok=True)
-                    session.delete(resource)
-                    removed += 1
-                except Exception as e:
-                    logger.error(f"Failed to remove expired resource: {resource.rname}", exc_info=e)
-
-            session.commit()
-
-        self._last_cleanup = datetime.now()
-        return removed
 
     def validate_resource(self, resource: Resource) -> bool:
         """Validate resource integrity.
@@ -509,14 +549,17 @@ class BiocFileCache:
             return [self._get_detached_resource(session, r) for r in resources]
 
     def get_stats(self) -> Dict[str, Any]:
-        """Get cache statistics.
-
-        Returns:
-            Dictionary of cache statistics.
-        """
+        """Get statistics about the cache."""
         with self.get_session() as session:
             total = session.query(Resource).count()
-            expired = session.query(Resource).filter(Resource.expires < datetime.now()).count()
+            expired = (
+                session.query(Resource)
+                .filter(
+                    Resource.expires.isnot(None),  # Only check resources with expiration
+                    Resource.expires < datetime.now(),
+                )
+                .count()
+            )
             types = dict(session.query(Resource.rtype, func.count(Resource.id)).group_by(Resource.rtype).all())
 
             return {
@@ -525,6 +568,7 @@ class BiocFileCache:
                 "cache_size_bytes": self.get_cache_size(),
                 "resource_types": types,
                 "last_cleanup": self._last_cleanup.isoformat(),
+                "cleanup_enabled": self.config.cleanup_interval is not None,
             }
 
     def purge(self, force: bool = False) -> bool:

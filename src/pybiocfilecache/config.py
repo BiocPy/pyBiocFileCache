@@ -17,10 +17,12 @@ class CacheConfig:
             Directory to store cached files.
 
         max_size_bytes:
-            Maximum total size of cache (None for unlimited).
+            Maximum total size of cache.
+            None for unlimited.
 
         cleanup_interval:
             How often to run expired resource cleanup.
+            None for no cleanup.
 
         rname_pattern:
             Regex pattern for valid resource names.
@@ -34,7 +36,7 @@ class CacheConfig:
 
     cache_dir: Path
     max_size_bytes: Optional[int] = None
-    cleanup_interval: timedelta = timedelta(days=30)
+    cleanup_interval: Optional[timedelta] = None  # timedelta(days=30)
     rname_pattern: str = r"^[a-zA-Z0-9_-]+$"
     hash_algorithm: str = "md5"
     compression: bool = False
