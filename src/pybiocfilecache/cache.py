@@ -53,8 +53,8 @@ class BiocFileCache:
         Args:
             cache_dir:
                 Path to cache directory.
-
                 Defaults to tmp location, :py:func:`~.utils.create_tmp_dir`.
+                Ignored if config already contains the path to the cache directory.
 
             config:
                 Optional configuration.
@@ -281,7 +281,7 @@ class BiocFileCache:
                 Defaults to ``copy``.
 
             tags:
-                Additional tags to update the resource.
+                Optional new list of tags.
 
         Returns:
             Updated `Resource` object.
@@ -318,8 +318,11 @@ class BiocFileCache:
     def remove(self, rname: str) -> None:
         """Remove a resource from cache by name.
 
+        Removes both the cached file and its database entry.
+
         Args:
-            rname: Name of the resource to remove
+            rname:
+                Name of the resource to remove
 
         Raises:
             BiocCacheError: If resource removal fails
@@ -355,7 +358,10 @@ class BiocFileCache:
                 Filter by resource type.
 
             expired:
-                Filter by expiration status.
+                Filter by expiration status
+                    True: only expired resources
+                    False: only non-expired resources
+                    None: all resources
 
         Returns:
             List of matching Resource objects.
@@ -381,6 +387,9 @@ class BiocFileCache:
 
         Returns:
             Number of resources removed.
+
+        Note:
+            Updates `_last_cleanup` timestamp after completion.
         """
         removed = 0
         with self.get_session() as session:
@@ -403,7 +412,8 @@ class BiocFileCache:
         """Validate resource integrity.
 
         Args:
-            resource: Resource to validate.
+            resource:
+                Resource to validate.
 
         Returns:
             True if resource is valid, False otherwise.
@@ -482,7 +492,7 @@ class BiocFileCache:
                 Search string.
 
             field:
-                Field to search.
+                Resource field to search ("rname", "rtype", "tags", etc.).
 
             exact:
                 Whether to require exact match.
