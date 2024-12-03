@@ -4,74 +4,91 @@
 
 # pyBiocFileCache
 
-File system based cache for resources & metadata. Compatible with [BiocFileCache R package](https://github.com/Bioconductor/BiocFileCache)
+`pyBiocFileCache` is a Python package that provides a robust file caching system with resource validation, cache size management, file compression, and resource tagging. Compatible with [BiocFileCache R package](https://github.com/Bioconductor/BiocFileCache).
 
-***Note: Package is in development. Use with caution!!***
+## Installation
 
-### Installation
+Install from [PyPI](https://pypi.org/project/pyBiocFileCache/),
 
-Package is published to [PyPI](https://pypi.org/project/pyBiocFileCache/)
-
-```
+```bash
 pip install pybiocfilecache
 ```
 
-#### Initialize a cache directory
+## Quick Start
 
-```
-from pybiocfilecache import BiocFileCache
-import os
+```python
+from biocfilecache import BiocFileCache
 
-bfc = BiocFileCache(cache_dir = os.getcwd() + "/cache")
-```
+# Initialize cache
+cache = BiocFileCache("path/to/cache/directory")
 
-Once the cache directory is created, the library provides methods to
-- `add`: Add a resource or artifact to cache
-- `get`: Get the resource from cache
-- `remove`: Remove a resource from cache
-- `update`: update the resource in cache
-- `purge`: purge the entire cache, removes all files in the cache directory
+# Add a file to cache
+resource = cache.add("myfile", "path/to/file.txt")
 
-### Add a resource to cache
+# Retrieve a file from cache
+resource = cache.get("myfile")
 
-(for testing use the temp files in the `tests/data` directory)
-
-```
-rec = bfc.add("test1", os.getcwd() + "/test1.txt")
-print(rec)
+# Use the cached file
+print(resource.rpath)  # Path to cached file
 ```
 
-### Get resource from cache
+## Advanced Usage
 
-```
-rec = bfc.get("test1")
-print(rec)
-```
+### Configuration
 
-### Remove resource from cache
+```python
+from biocfilecache import BiocFileCache, CacheConfig
+from datetime import timedelta
+from pathlib import Path
 
-```
-rec = bfc.remove("test1")
-print(rec)
-```
+# Create custom configuration
+config = CacheConfig(
+    cache_dir=Path("cache_directory"),
+    max_size_bytes=1024 * 1024 * 1024,  # 1GB
+    cleanup_interval=timedelta(days=7),
+    compression=True
+)
 
-### Update resource in cache
-
-```
-rec = bfc.get("test1"m os.getcwd() + "test2.txt")
-print(rec)
-```
-
-### purge the cache
-
-```
-bfc.purge()
+# Initialize cache with configuration
+cache = BiocFileCache(config=config)
 ```
 
+### Resource Management
 
-<!-- pyscaffold-notes -->
+```python
+# Add file with tags and expiration
+from datetime import datetime, timedelta
 
-## Note
+resource = cache.add(
+    "myfile",
+    "path/to/file.txt",
+    tags=["data", "raw"],
+    expires=datetime.now() + timedelta(days=30)
+)
 
-This project has been set up using PyScaffold 4.1. For details and usage
-information on PyScaffold see https://pyscaffold.org/.
+# List resources by tag
+resources = cache.list_resources(tag="data")
+
+# Search resources
+results = cache.search("myfile", field="rname")
+
+# Update resource
+cache.update("myfile", "path/to/new_file.txt")
+
+# Remove resource
+cache.remove("myfile")
+```
+
+### Cache Statistics and Maintenance
+
+```python
+# Get cache statistics
+stats = cache.get_stats()
+print(stats)
+
+# Clean up expired resources
+removed_count = cache.cleanup()
+
+# Purge entire cache
+cache.purge()
+```

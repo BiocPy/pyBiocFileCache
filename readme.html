@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="License" href="license.html" /><link rel="prev" title="pyBiocFileCache" href="index.html" />
 
     <!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>pyBiocFileCache - pyBiocFileCache 0.4.1 documentation</title>
+        <title>pyBiocFileCache - pyBiocFileCache 0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
@@ -166,7 +166,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">pyBiocFileCache 0.4.1 documentation</div></a>
+      <a href="index.html"><div class="brand">pyBiocFileCache 0.5.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -190,7 +190,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">pyBiocFileCache 0.4.1 documentation</span>
+  <span class="sidebar-brand-text">pyBiocFileCache 0.5.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -204,10 +204,7 @@
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/modules.html">Module Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Module Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="api/pybiocfilecache.html">pybiocfilecache package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of pybiocfilecache package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/pybiocfilecache.db.html">pybiocfilecache.db package</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="api/pybiocfilecache.html">pybiocfilecache package</a></li>
 </ul>
 </li>
 </ul>
@@ -255,71 +252,93 @@
 <img alt="Unit tests" src="https://github.com/BiocPy/pyBiocFileCache/actions/workflows/pypi-test.yml/badge.svg" /></p>
 <section id="pybiocfilecache">
 <h1>pyBiocFileCache<a class="headerlink" href="#pybiocfilecache" title="Link to this heading">¶</a></h1>
-<p>File system based cache for resources &amp; metadata. Compatible with <a class="reference external" href="https://github.com/Bioconductor/BiocFileCache">BiocFileCache R package</a></p>
-<p><em><strong>Note: Package is in development. Use with caution!!</strong></em></p>
+<p><code class="docutils literal notranslate"><span class="pre">pyBiocFileCache</span></code> is a Python package that provides a robust file caching system with resource validation, cache size management, file compression, and resource tagging. Compatible with <a class="reference external" href="https://github.com/Bioconductor/BiocFileCache">BiocFileCache R package</a>.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
-<p>Package is published to <a class="reference external" href="https://pypi.org/project/pyBiocFileCache/">PyPI</a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pybiocfilecache</span>
+<p>Install from <a class="reference external" href="https://pypi.org/project/pyBiocFileCache/">PyPI</a>,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pybiocfilecache
 </pre></div>
 </div>
-<section id="initialize-a-cache-directory">
-<h3>Initialize a cache directory<a class="headerlink" href="#initialize-a-cache-directory" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pybiocfilecache</span> <span class="kn">import</span> <span class="n">BiocFileCache</span>
-<span class="kn">import</span> <span class="nn">os</span>
+</section>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">biocfilecache</span> <span class="kn">import</span> <span class="n">BiocFileCache</span>
 
-<span class="n">bfc</span> <span class="o">=</span> <span class="n">BiocFileCache</span><span class="p">(</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/cache&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Once the cache directory is created, the library provides methods to</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">add</span></code>: Add a resource or artifact to cache</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">get</span></code>: Get the resource from cache</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">remove</span></code>: Remove a resource from cache</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">update</span></code>: update the resource in cache</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">purge</span></code>: purge the entire cache, removes all files in the cache directory</p></li>
-</ul>
-</section>
-</section>
-<section id="add-a-resource-to-cache">
-<h2>Add a resource to cache<a class="headerlink" href="#add-a-resource-to-cache" title="Link to this heading">¶</a></h2>
-<p>(for testing use the temp files in the <code class="docutils literal notranslate"><span class="pre">tests/data</span></code> directory)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rec</span> <span class="o">=</span> <span class="n">bfc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;test1&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;/test1.txt&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
+<span class="c1"># Initialize cache</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">BiocFileCache</span><span class="p">(</span><span class="s2">&quot;path/to/cache/directory&quot;</span><span class="p">)</span>
+
+<span class="c1"># Add a file to cache</span>
+<span class="n">resource</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;myfile&quot;</span><span class="p">,</span> <span class="s2">&quot;path/to/file.txt&quot;</span><span class="p">)</span>
+
+<span class="c1"># Retrieve a file from cache</span>
+<span class="n">resource</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;myfile&quot;</span><span class="p">)</span>
+
+<span class="c1"># Use the cached file</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">rpath</span><span class="p">)</span>  <span class="c1"># Path to cached file</span>
 </pre></div>
 </div>
 </section>
-<section id="get-resource-from-cache">
-<h2>Get resource from cache<a class="headerlink" href="#get-resource-from-cache" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rec</span> <span class="o">=</span> <span class="n">bfc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;test1&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
+<section id="advanced-usage">
+<h2>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Link to this heading">¶</a></h2>
+<section id="configuration">
+<h3>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">biocfilecache</span> <span class="kn">import</span> <span class="n">BiocFileCache</span><span class="p">,</span> <span class="n">CacheConfig</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># Create custom configuration</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">CacheConfig</span><span class="p">(</span>
+    <span class="n">cache_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;cache_directory&quot;</span><span class="p">),</span>
+    <span class="n">max_size_bytes</span><span class="o">=</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>  <span class="c1"># 1GB</span>
+    <span class="n">cleanup_interval</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">),</span>
+    <span class="n">compression</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Initialize cache with configuration</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">BiocFileCache</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="remove-resource-from-cache">
-<h2>Remove resource from cache<a class="headerlink" href="#remove-resource-from-cache" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rec</span> <span class="o">=</span> <span class="n">bfc</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;test1&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
+<section id="resource-management">
+<h3>Resource Management<a class="headerlink" href="#resource-management" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add file with tags and expiration</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="n">resource</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="s2">&quot;myfile&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;path/to/file.txt&quot;</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;raw&quot;</span><span class="p">],</span>
+    <span class="n">expires</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># List resources by tag</span>
+<span class="n">resources</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">list_resources</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+
+<span class="c1"># Search resources</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;myfile&quot;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s2">&quot;rname&quot;</span><span class="p">)</span>
+
+<span class="c1"># Update resource</span>
+<span class="n">cache</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;myfile&quot;</span><span class="p">,</span> <span class="s2">&quot;path/to/new_file.txt&quot;</span><span class="p">)</span>
+
+<span class="c1"># Remove resource</span>
+<span class="n">cache</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;myfile&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="update-resource-in-cache">
-<h2>Update resource in cache<a class="headerlink" href="#update-resource-in-cache" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rec</span> <span class="o">=</span> <span class="n">bfc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;test1&quot;</span><span class="n">m</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;test2.txt&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
+<section id="cache-statistics-and-maintenance">
+<h3>Cache Statistics and Maintenance<a class="headerlink" href="#cache-statistics-and-maintenance" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cache statistics</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+
+<span class="c1"># Clean up expired resources</span>
+<span class="n">removed_count</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+
+<span class="c1"># Purge entire cache</span>
+<span class="n">cache</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
-<section id="purge-the-cache">
-<h2>purge the cache<a class="headerlink" href="#purge-the-cache" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bfc</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
-</pre></div>
-</div>
-<!-- pyscaffold-notes --></section>
-<section id="note">
-<h2>Note<a class="headerlink" href="#note" title="Link to this heading">¶</a></h2>
-<p>This project has been set up using PyScaffold 4.1. For details and usage
-information on PyScaffold see https://pyscaffold.org/.</p>
 </section>
 </section>
 
@@ -379,16 +398,14 @@ information on PyScaffold see https://pyscaffold.org/.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">pyBiocFileCache</a><ul>
-<li><a class="reference internal" href="#installation">Installation</a><ul>
-<li><a class="reference internal" href="#initialize-a-cache-directory">Initialize a cache directory</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#quick-start">Quick Start</a></li>
+<li><a class="reference internal" href="#advanced-usage">Advanced Usage</a><ul>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#resource-management">Resource Management</a></li>
+<li><a class="reference internal" href="#cache-statistics-and-maintenance">Cache Statistics and Maintenance</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#add-a-resource-to-cache">Add a resource to cache</a></li>
-<li><a class="reference internal" href="#get-resource-from-cache">Get resource from cache</a></li>
-<li><a class="reference internal" href="#remove-resource-from-cache">Remove resource from cache</a></li>
-<li><a class="reference internal" href="#update-resource-in-cache">Update resource in cache</a></li>
-<li><a class="reference internal" href="#purge-the-cache">purge the cache</a></li>
-<li><a class="reference internal" href="#note">Note</a></li>
 </ul>
 </li>
 </ul>
@@ -400,7 +417,7 @@ information on PyScaffold see https://pyscaffold.org/.</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="_static/documentation_options.js?v=1dd76d02"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=5fa4622c"></script>

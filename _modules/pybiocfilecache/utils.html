@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
     <!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>pybiocfilecache.utils - pyBiocFileCache 0.4.1 documentation</title>
+        <title>pybiocfilecache.utils - pyBiocFileCache 0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.4.1 documentation</div></a>
+      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.5.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -189,7 +189,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
   
-  <span class="sidebar-brand-text">pyBiocFileCache 0.4.1 documentation</span>
+  <span class="sidebar-brand-text">pyBiocFileCache 0.5.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -203,10 +203,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/modules.html">Module Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Module Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../api/pybiocfilecache.html">pybiocfilecache package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of pybiocfilecache package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../api/pybiocfilecache.db.html">pybiocfilecache.db package</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/pybiocfilecache.html">pybiocfilecache package</a></li>
 </ul>
 </li>
 </ul>
@@ -244,102 +241,112 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for pybiocfilecache.utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">sys</span>
+<span></span><span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">zlib</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">copy2</span><span class="p">,</span> <span class="n">move</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="n">BiocCacheError</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Jayaram Kancherla&quot;</span>
-<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;jkanche&quot;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Jayaram Kancherla&quot;</span>
 <span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;MIT&quot;</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="create_tmp_dir">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.utils.create_tmp_dir">[docs]</a>
-<span class="k">def</span> <span class="nf">create_tmp_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a temporary directory.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Temporary path to the directory.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span></div>
+<span class="k">def</span> <span class="nf">create_tmp_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a temporary directory.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">())</span></div>
 
 
 
 <div class="viewcode-block" id="generate_id">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.utils.generate_id">[docs]</a>
 <span class="k">def</span> <span class="nf">generate_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate uuid.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Unique string for use as id.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate unique identifier.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span></div>
+
+
+
+<div class="viewcode-block" id="validate_rname">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.utils.validate_rname">[docs]</a>
+<span class="k">def</span> <span class="nf">validate_rname</span><span class="p">(</span><span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate resource name format.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">rname</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_file_hash">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.utils.calculate_file_hash">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_file_hash</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;md5&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate file checksum.&quot;&quot;&quot;</span>
+    <span class="n">hasher</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">algorithm</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4096</span><span class="p">),</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+            <span class="n">hasher</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hasher</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="get_file_size">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.utils.get_file_size">[docs]</a>
+<span class="k">def</span> <span class="nf">get_file_size</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get file size in bytes.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span></div>
+
+
+
+<div class="viewcode-block" id="compress_file">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.utils.compress_file">[docs]</a>
+<span class="k">def</span> <span class="nf">compress_file</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compress file using zlib.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sf</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tf</span><span class="p">:</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">sf</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span></div>
+
+
+
+<div class="viewcode-block" id="decompress_file">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.utils.decompress_file">[docs]</a>
+<span class="k">def</span> <span class="nf">decompress_file</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decompress file using zlib.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sf</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tf</span><span class="p">:</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">sf</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span></div>
 
 
 
 <div class="viewcode-block" id="copy_or_move">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.utils.copy_or_move">[docs]</a>
 <span class="k">def</span> <span class="nf">copy_or_move</span><span class="p">(</span>
-    <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-    <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">action</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;copy&quot;</span><span class="p">,</span> <span class="s2">&quot;move&quot;</span><span class="p">,</span> <span class="s2">&quot;asis&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;copy&quot;</span><span class="p">,</span> <span class="s2">&quot;move&quot;</span><span class="p">,</span> <span class="s2">&quot;asis&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span> <span class="n">compress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Copy or move a resource from ``source`` to ``target``.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        source:</span>
-<span class="sd">            Source location of the resource to copy of move.</span>
-
-<span class="sd">        target:</span>
-<span class="sd">            Destination to copy of move to.</span>
-
-<span class="sd">        rname:</span>
-<span class="sd">            Name of resource to add to cache.</span>
-
-<span class="sd">        action:</span>
-<span class="sd">            Copy of move file from source.</span>
-<span class="sd">            Defaults to copy.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError:</span>
-<span class="sd">            If action is not `copy`, `move` or `asis`.</span>
-
-<span class="sd">        Exception:</span>
-<span class="sd">            Error storing resource in the cache directory.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Copy or move a resource.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;copy&quot;</span><span class="p">,</span> <span class="s2">&quot;move&quot;</span><span class="p">,</span> <span class="s2">&quot;asis&quot;</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Action must be either &#39;move&#39;, &#39;copy&#39; or &#39;asis&#39;, provided </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid action: </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;copy&quot;</span><span class="p">:</span>
-            <span class="n">copy2</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">compress</span><span class="p">:</span>
+                <span class="n">compress_file</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">copy2</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;move&quot;</span><span class="p">:</span>
-            <span class="n">move</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">source</span><span class="p">),</span> <span class="n">target</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">compress</span><span class="p">:</span>
+                <span class="n">compress_file</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+                <span class="n">source</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">move</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">source</span><span class="p">),</span> <span class="n">target</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;asis&quot;</span><span class="p">:</span>
             <span class="k">pass</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Error storing resource: &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; from: &#39;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&#39; in &#39;</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">,</span>
-        <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span></div>
-
-
-
-<div class="viewcode-block" id="setup_logging">
-<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.utils.setup_logging">[docs]</a>
-<span class="k">def</span> <span class="nf">setup_logging</span><span class="p">(</span><span class="n">loglevel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Setup basic logging.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">      loglevel (int): minimum loglevel for emitting messages</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logformat</span> <span class="o">=</span> <span class="s2">&quot;[</span><span class="si">%(asctime)s</span><span class="s2">] </span><span class="si">%(levelname)s</span><span class="s2">:</span><span class="si">%(name)s</span><span class="s2">:</span><span class="si">%(message)s</span><span class="s2">&quot;</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">loglevel</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">logformat</span><span class="p">,</span> <span class="n">datefmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to store resource &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; from &#39;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&#39; to &#39;</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span></div>
 
 </pre></div>
         </article>
@@ -373,7 +380,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../../_static/documentation_options.js?v=1dd76d02"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
