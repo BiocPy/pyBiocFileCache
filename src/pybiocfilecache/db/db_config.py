@@ -72,9 +72,7 @@ def create_schema(cache_dir: str) -> Tuple[Engine, sessionmaker]:
     Returns:
         A tuple of sqlalchemy engine and session maker.
     """
-    engine = create_engine(
-        f"sqlite:///{cache_dir}", connect_args={"check_same_thread": False}
-    )
+    engine = create_engine(f"sqlite:///{cache_dir}", connect_args={"check_same_thread": False})
 
     Base.metadata.create_all(bind=engine, checkfirst=True)
     sessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

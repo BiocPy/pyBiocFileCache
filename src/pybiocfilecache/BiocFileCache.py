@@ -95,11 +95,7 @@ class BiocFileCache:
             raise NoFpathError(f"Resource at '{fpath}' does not exist.")
 
         rid = generate_id()
-        rpath = (
-            f"{self.cache}/{rid}" + (f".{fpath.suffix}" if ext else "")
-            if action != "asis"
-            else str(fpath)
-        )
+        rpath = f"{self.cache}/{rid}" + (f".{fpath.suffix}" if ext else "") if action != "asis" else str(fpath)
 
         # create new record in the database
         res = Resource(
@@ -151,11 +147,7 @@ class BiocFileCache:
             List of matching resources from cache.
         """
         with self.sessionLocal() as session:
-            return (
-                session.query(Resource)
-                .filter(Resource[field].ilike("%{}%".format(query)))
-                .all()
-            )
+            return session.query(Resource).filter(Resource[field].ilike("%{}%".format(query))).all()
 
     def _get(self, session: Session, rname: str) -> Optional[Resource]:
         """Get a resource with `rname` from given `Session`.
@@ -170,9 +162,7 @@ class BiocFileCache:
         Returns:
             The `Resource` for the `rname` if available.
         """
-        resource: Optional[Resource] = (
-            session.query(Resource).filter(Resource.rname == rname).first()
-        )
+        resource: Optional[Resource] = session.query(Resource).filter(Resource.rname == rname).first()
 
         if resource is not None:
             # `Resource` may exist but `rpath` could still be being
@@ -182,8 +172,7 @@ class BiocFileCache:
             while not Path(str(resource.rpath)).exists():
                 if time() - start >= timeout:
                     raise RpathTimeoutError(
-                        f"For resource: '{rname}' the rpath does not exist "
-                        f"after {timeout} seconds."
+                        f"For resource: '{rname}' the rpath does not exist " f"after {timeout} seconds."
                     )
                 sleep(0.1)
 
