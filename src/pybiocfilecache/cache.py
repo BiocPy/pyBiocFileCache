@@ -309,14 +309,28 @@ class BiocFileCache:
                 raise BiocCacheError("Failed to update resource") from e
 
     def remove(self, rname: str) -> None:
-        """Remove a resource from the cache."""
+        """Remove a resource from cache by name.
+
+        Args:
+            rname: Name of the resource to remove
+
+        Raises:
+            BiocCacheError: If resource removal fails
+        """
         with self.get_session() as session:
-            resource = self._get(session, rname, validate=False)
+            resource = session.query(Resource).filter(Resource.rname == rname).first()
+
             if resource is not None:
                 try:
-                    Path(resource.rpath).unlink(missing_ok=True)
+                    # Try to remove the file first
+                    rpath = Path(resource.rpath)
+                    if rpath.exists():
+                        rpath.unlink()
+
+                    # Then remove from database
                     session.delete(resource)
                     session.commit()
+
                 except Exception as e:
                     session.rollback()
                     raise BiocCacheError(f"Failed to remove resource '{rname}'") from e

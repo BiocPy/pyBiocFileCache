@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from pybiocfilecache import BiocFileCache
 
@@ -35,10 +36,11 @@ def test_add_get_operations():
     frec2 = open(rec2.rpath, "r").read().strip()
     assert frec2 == "test2"
 
-    bfc.add("test3_asis", os.getcwd() + "/tests/data/test2.txt", action="asis")
+    shutil.copy(os.getcwd() + "/tests/data/test2.txt", os.getcwd() + "/tests/data/test3.txt")
+    bfc.add("test3_asis", os.getcwd() + "/tests/data/test3.txt", action="asis")
     rec3 = bfc.get("test3_asis")
     assert rec3 is not None
-    assert rec3.rpath == os.getcwd() + "/tests/data/test2.txt"
+    assert rec3.rpath == os.getcwd() + "/tests/data/test3.txt"
 
     frec3 = open(rec3.rpath, "r").read().strip()
     assert frec3 == "test2"
