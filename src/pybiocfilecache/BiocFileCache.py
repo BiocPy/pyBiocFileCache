@@ -274,3 +274,12 @@ class BiocFileCache:
                 # but lets just add it to the cache.
                 res = self.add(rname=rname, fpath=fpath, action=action)
             return res
+
+    def list_all(self) -> List[Resource]:
+        """List all resources currently in the cache.
+
+        Returns:
+            List of all Resource objects in the cache.
+        """
+        with self.sessionLocal() as session:
+            return session.query(Resource).all()
