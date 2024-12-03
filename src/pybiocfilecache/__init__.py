@@ -16,6 +16,3 @@ finally:
     del version, PackageNotFoundError
 
 from .cache import BiocFileCache
-from .exceptions import NoFpathError
-from .exceptions import RnameExistsError
-from .exceptions import RpathTimeoutError
