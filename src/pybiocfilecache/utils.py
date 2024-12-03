@@ -1,85 +1,83 @@
+import hashlib
 import logging
-import sys
+import re
 import tempfile
 import uuid
+import zlib
 from pathlib import Path
 from shutil import copy2, move
-from typing import Literal, Union
+from typing import Literal
+
+from .exceptions import BiocCacheError
 
 __author__ = "Jayaram Kancherla"
-__copyright__ = "jkanche"
+__copyright__ = "Jayaram Kancherla"
 __license__ = "MIT"
 
+logger = logging.getLogger(__name__)
 
-def create_tmp_dir() -> str:
-    """Create a temporary directory.
 
-    Returns:
-        Temporary path to the directory.
-    """
-    return tempfile.mkdtemp()
+def create_tmp_dir() -> Path:
+    """Create a temporary directory."""
+    return Path(tempfile.mkdtemp())
 
 
 def generate_id() -> str:
-    """Generate uuid.
-
-    Returns:
-        Unique string for use as id.
-    """
+    """Generate unique identifier."""
     return uuid.uuid4().hex
 
 
+def validate_rname(rname: str, pattern: str) -> bool:
+    """Validate resource name format."""
+    return bool(re.match(pattern, rname))
+
+
+def calculate_file_hash(path: Path, algorithm: str = "md5") -> str:
+    """Calculate file checksum."""
+    hasher = hashlib.new(algorithm)
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def get_file_size(path: Path) -> int:
+    """Get file size in bytes."""
+    return path.stat().st_size
+
+
+def compress_file(source: Path, target: Path) -> None:
+    """Compress file using zlib."""
+    with open(source, "rb") as sf, open(target, "wb") as tf:
+        tf.write(zlib.compress(sf.read()))
+
+
+def decompress_file(source: Path, target: Path) -> None:
+    """Decompress file using zlib."""
+    with open(source, "rb") as sf, open(target, "wb") as tf:
+        tf.write(zlib.decompress(sf.read()))
+
+
 def copy_or_move(
-    source: Union[str, Path],
-    target: Union[str, Path],
-    rname: str,
-    action: Literal["copy", "move", "asis"] = "copy",
+    source: Path, target: Path, rname: str, action: Literal["copy", "move", "asis"] = "copy", compress: bool = False
 ) -> None:
-    """Copy or move a resource from ``source`` to ``target``.
-
-    Args:
-        source:
-            Source location of the resource to copy of move.
-
-        target:
-            Destination to copy of move to.
-
-        rname:
-            Name of resource to add to cache.
-
-        action:
-            Copy of move file from source.
-            Defaults to copy.
-
-    Raises:
-        ValueError:
-            If action is not `copy`, `move` or `asis`.
-
-        Exception:
-            Error storing resource in the cache directory.
-    """
-
+    """Copy or move a resource."""
     if action not in ["copy", "move", "asis"]:
-        raise ValueError(f"Action must be either 'move', 'copy' or 'asis', provided {action}.")
+        raise ValueError(f"Invalid action: {action}")
 
     try:
         if action == "copy":
-            copy2(source, target)
+            if compress:
+                compress_file(source, target)
+            else:
+                copy2(source, target)
         elif action == "move":
-            move(str(source), target)
+            if compress:
+                compress_file(source, target)
+                source.unlink()
+            else:
+                move(str(source), target)
         elif action == "asis":
             pass
     except Exception as e:
-        raise Exception(
-            f"Error storing resource: '{rname}' from: '{source}' in '{target}'.",
-        ) from e
-
-
-def setup_logging(loglevel):
-    """Setup basic logging.
-
-    Args:
-      loglevel (int): minimum loglevel for emitting messages
-    """
-    logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S")
+        raise BiocCacheError(f"Failed to store resource '{rname}' from '{source}' to '{target}'") from e

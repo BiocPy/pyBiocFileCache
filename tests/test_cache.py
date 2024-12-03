@@ -1,6 +1,7 @@
 import os
+import shutil
 
-from pybiocfilecache.BiocFileCache import BiocFileCache
+from pybiocfilecache import BiocFileCache
 
 __author__ = "jkanche"
 __copyright__ = "jkanche"
@@ -19,8 +20,10 @@ def test_create_cache():
 def test_add_get_operations():
     bfc = BiocFileCache(CACHE_DIR)
 
-    bfc.add("test1", os.getcwd() + "/tests/data/test1.txt")
+    rtrip = bfc.add("test1", os.getcwd() + "/tests/data/test1.txt")
+    print("rtrip: ", rtrip)
     rec1 = bfc.get("test1")
+    print("rec1: ", rec1)
     assert rec1 is not None
 
     bfc.add("test2", os.getcwd() + "/tests/data/test2.txt")
@@ -33,15 +36,16 @@ def test_add_get_operations():
     frec2 = open(rec2.rpath, "r").read().strip()
     assert frec2 == "test2"
 
-    bfc.add("test3_asis", os.getcwd() + "/tests/data/test2.txt", action="asis")
+    shutil.copy(os.getcwd() + "/tests/data/test2.txt", os.getcwd() + "/tests/data/test3.txt")
+    bfc.add("test3_asis", os.getcwd() + "/tests/data/test3.txt", action="asis")
     rec3 = bfc.get("test3_asis")
     assert rec3 is not None
-    assert rec3.rpath == os.getcwd() + "/tests/data/test2.txt"
+    assert rec3.rpath == os.getcwd() + "/tests/data/test3.txt"
 
     frec3 = open(rec3.rpath, "r").read().strip()
     assert frec3 == "test2"
 
-    rtrip = bfc.list_all()
+    rtrip = bfc.list_resources()
     assert len(rtrip) == 3
 
     bfc.purge()
