@@ -60,9 +60,7 @@ def copy_or_move(
     """
 
     if action not in ["copy", "move", "asis"]:
-        raise ValueError(
-            f"Action must be either 'move', 'copy' or 'asis', provided {action}."
-        )
+        raise ValueError(f"Action must be either 'move', 'copy' or 'asis', provided {action}.")
 
     try:
         if action == "copy":
@@ -84,6 +82,4 @@ def setup_logging(loglevel):
       loglevel (int): minimum loglevel for emitting messages
     """
     logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(
-        level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
-    )
+    logging.basicConfig(level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S")

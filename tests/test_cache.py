@@ -41,6 +41,9 @@ def test_add_get_operations():
     frec3 = open(rec3.rpath, "r").read().strip()
     assert frec3 == "test2"
 
+    rtrip = bfc.list_all()
+    assert len(rtrip) == 3
+
     bfc.purge()
 
 
