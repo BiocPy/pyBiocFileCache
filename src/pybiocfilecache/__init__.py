@@ -16,3 +16,4 @@ finally:
     del version, PackageNotFoundError
 
 from .cache import BiocFileCache
+from .config import CacheConfig
