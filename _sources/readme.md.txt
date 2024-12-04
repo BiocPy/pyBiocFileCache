@@ -17,7 +17,7 @@ pip install pybiocfilecache
 ## Quick Start
 
 ```python
-from biocfilecache import BiocFileCache
+from pybiocfilecache import BiocFileCache
 
 # Initialize cache
 cache = BiocFileCache("path/to/cache/directory")
@@ -37,7 +37,7 @@ print(resource.rpath)  # Path to cached file
 ### Configuration
 
 ```python
-from biocfilecache import BiocFileCache, CacheConfig
+from pybiocfilecache import BiocFileCache, CacheConfig
 from datetime import timedelta
 from pathlib import Path
 
