@@ -25,43 +25,43 @@ class Resource(Base):
 
     Attributes:
         id:
-            Auto-incrementing primary key
+            Auto-incrementing primary key.
 
         rid:
-            Unique resource identifier (UUID)
+            Unique resource identifier (UUID).
 
         rname:
-            User-provided resource name
+            User-provided resource name.
 
         create_time:
-            When the resource was first added
+            When the resource was first added.
 
         access_time:
-            Last time the resource was accessed
+            Last time the resource was accessed.
 
         rpath:
-            Path to the resource in the cache
+            Path to the resource in the cache.
 
         rtype:
-            Type of resource (local, web, relative)
+            Type of resource (local, web, relative).
 
         fpath:
-            Original file path
+            Original file path.
 
         last_modified_time:
-            Last time the resource was modified
+            Last time the resource was modified.
 
         etag:
-            Checksum/hash of the resource
+            Checksum/hash of the resource.
 
         expires:
-            When the resource should be considered expired
+            When the resource should be considered expired.
 
         tags:
-            Optional comma-separated tags for categorization
+            Optional comma-separated tags for categorization.
 
         size_bytes:
-            Size of the resource in bytes
+            Size of the resource in bytes.
     """
 
     __tablename__ = "resource"
