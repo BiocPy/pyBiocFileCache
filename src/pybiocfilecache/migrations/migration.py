@@ -50,9 +50,9 @@ class Migrator:
             column_names = {col[1] for col in columns}
 
             # Check for columns that indicate version
-            if "is_compressed" in column_names:
-                return "0.5.0"
-            elif "tags" in column_names and "size_bytes" in column_names:
+            # if "is_compressed" in column_names:
+            #     return "0.5.0"
+            if "tags" in column_names and "size_bytes" in column_names:
                 return "0.5.0"
             else:
                 return "0.4.1"
