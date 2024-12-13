@@ -21,19 +21,19 @@ class MigrationV0_5_0(Migration):
             # Add new columns
             conn.execute(
                 text("""
-                ALTER TABLE resource 
+                ALTER TABLE resource
                 ADD COLUMN tags TEXT;
             """)
             )
             conn.execute(
                 text("""
-                ALTER TABLE resource 
+                ALTER TABLE resource
                 ADD COLUMN size_bytes INTEGER;
             """)
             )
             # conn.execute(
             #     text("""
-            #     ALTER TABLE resource 
+            #     ALTER TABLE resource
             #     ADD COLUMN is_compressed BOOLEAN DEFAULT FALSE;
             # """)
             # )
@@ -59,13 +59,13 @@ class MigrationV0_5_0(Migration):
             # Add indexes
             conn.execute(
                 text("""
-                CREATE UNIQUE INDEX IF NOT EXISTS ix_resource_rname 
+                CREATE UNIQUE INDEX IF NOT EXISTS ix_resource_rname
                 ON resource(rname);
             """)
             )
             conn.execute(
                 text("""
-                CREATE INDEX IF NOT EXISTS ix_resource_rid 
+                CREATE INDEX IF NOT EXISTS ix_resource_rid
                 ON resource(rid);
             """)
             )
@@ -73,8 +73,8 @@ class MigrationV0_5_0(Migration):
             # Update metadata
             conn.execute(
                 text("""
-                UPDATE metadata 
-                SET value = '0.5.0' 
+                UPDATE metadata
+                SET value = '0.5.0'
                 WHERE key = 'schema_version';
             """)
             )
@@ -95,8 +95,8 @@ class MigrationV0_5_0(Migration):
             # Update metadata
             conn.execute(
                 text("""
-                UPDATE metadata 
-                SET value = '0.4.1' 
+                UPDATE metadata
+                SET value = '0.4.1'
                 WHERE key = 'schema_version';
             """)
             )

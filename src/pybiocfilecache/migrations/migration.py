@@ -65,7 +65,7 @@ class Migrator:
         with self.engine.connect() as conn:
             result = conn.execute(
                 text("""
-                SELECT value FROM metadata 
+                SELECT value FROM metadata
                 WHERE key = 'schema_version'
             """)
             )
@@ -77,7 +77,7 @@ class Migrator:
             detected_version = self._detect_version_from_structure()
             conn.execute(
                 text("""
-                INSERT INTO metadata (key, value) 
+                INSERT INTO metadata (key, value)
                 VALUES ('schema_version', :version);
             """),
                 {"version": detected_version},
