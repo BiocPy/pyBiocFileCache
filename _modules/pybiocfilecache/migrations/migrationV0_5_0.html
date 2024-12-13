@@ -1,14 +1,14 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="../../">
+<html class="no-js" lang="en" data-content_root="../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
     <!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>pybiocfilecache.models - pyBiocFileCache 0.5.2.dev1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
+        <title>pybiocfilecache.migrations.migrationV0_5_0 - pyBiocFileCache 0.5.2.dev1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.5.2.dev1 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">pyBiocFileCache 0.5.2.dev1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -186,25 +186,25 @@
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
       
-      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
   
   
   <span class="sidebar-brand-text">pyBiocFileCache 0.5.2.dev1 documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../readme.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/modules.html">Module Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Module Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../api/pybiocfilecache.html">pybiocfilecache package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of pybiocfilecache package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../api/pybiocfilecache.migrations.html">pybiocfilecache.migrations package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/modules.html">Module Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Module Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/pybiocfilecache.html">pybiocfilecache package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of pybiocfilecache package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/pybiocfilecache.migrations.html">pybiocfilecache.migrations package</a></li>
 </ul>
 </li>
 </ul>
@@ -243,96 +243,117 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <h1>Source code for pybiocfilecache.models</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">func</span>
-<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+          <h1>Source code for pybiocfilecache.migrations.migrationV0_5_0</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">text</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="kn">from</span> <span class="nn">.migration</span> <span class="kn">import</span> <span class="n">Migration</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Jayaram Kancherla&quot;</span>
 <span class="n">__copyright__</span> <span class="o">=</span> <span class="s2">&quot;Jayaram Kancherla&quot;</span>
 <span class="n">__license__</span> <span class="o">=</span> <span class="s2">&quot;MIT&quot;</span>
 
-<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MigrationV0_5_0">
+<a class="viewcode-back" href="../../../api/pybiocfilecache.migrations.html#pybiocfilecache.migrations.migrationV0_5_0.MigrationV0_5_0">[docs]</a>
+<span class="k">class</span> <span class="nc">MigrationV0_5_0</span><span class="p">(</span><span class="n">Migration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Migration from v0.4.1 to 0.5.0.&quot;&quot;&quot;</span>
+
+    <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.5.0&quot;</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Add tags, size_bytes, compression flag, and update indexes&quot;</span>
+
+<div class="viewcode-block" id="MigrationV0_5_0.up">
+<a class="viewcode-back" href="../../../api/pybiocfilecache.migrations.html#pybiocfilecache.migrations.migrationV0_5_0.MigrationV0_5_0.up">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">up</span><span class="p">(</span><span class="n">engine</span><span class="p">:</span> <span class="n">Engine</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Upgrade from v0.4.1 to v0.5.0.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="c1"># Add new columns</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">text</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                ALTER TABLE resource</span>
+<span class="s2">                ADD COLUMN tags TEXT;</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">text</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                ALTER TABLE resource</span>
+<span class="s2">                ADD COLUMN size_bytes INTEGER;</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="c1"># conn.execute(</span>
+            <span class="c1">#     text(&quot;&quot;&quot;</span>
+            <span class="c1">#     ALTER TABLE resource</span>
+            <span class="c1">#     ADD COLUMN is_compressed BOOLEAN DEFAULT FALSE;</span>
+            <span class="c1"># &quot;&quot;&quot;)</span>
+            <span class="c1"># )</span>
+
+            <span class="c1"># Calculate size_bytes for existing resources</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">text</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                UPDATE resource</span>
+<span class="s2">                SET size_bytes = (</span>
+<span class="s2">                    SELECT length(readfile(rpath))</span>
+<span class="s2">                    FROM resource r2</span>
+<span class="s2">                    WHERE r2.id = resource.id</span>
+<span class="s2">                )</span>
+<span class="s2">                WHERE EXISTS (</span>
+<span class="s2">                    SELECT 1</span>
+<span class="s2">                    FROM resource r3</span>
+<span class="s2">                    WHERE r3.id = resource.id</span>
+<span class="s2">                    AND r3.rpath IS NOT NULL</span>
+<span class="s2">                );</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Add indexes</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">text</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                CREATE UNIQUE INDEX IF NOT EXISTS ix_resource_rname</span>
+<span class="s2">                ON resource(rname);</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">text</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                CREATE INDEX IF NOT EXISTS ix_resource_rid</span>
+<span class="s2">                ON resource(rid);</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Update metadata</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">text</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                UPDATE metadata</span>
+<span class="s2">                SET value = &#39;0.5.0&#39;</span>
+<span class="s2">                WHERE key = &#39;schema_version&#39;;</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Metadata">
-<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.models.Metadata">[docs]</a>
-<span class="k">class</span> <span class="nc">Metadata</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Database metadata information.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MigrationV0_5_0.down">
+<a class="viewcode-back" href="../../../api/pybiocfilecache.migrations.html#pybiocfilecache.migrations.migrationV0_5_0.MigrationV0_5_0.down">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">down</span><span class="p">(</span><span class="n">engine</span><span class="p">:</span> <span class="n">Engine</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Downgrade from v0.5.0 to 0.4.1.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="c1"># Remove indexes</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;DROP INDEX IF EXISTS ix_resource_rname;&quot;</span><span class="p">))</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;DROP INDEX IF EXISTS ix_resource_rid;&quot;</span><span class="p">))</span>
 
-    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;metadata&quot;</span>
+            <span class="c1"># Remove columns</span>
+            <span class="c1"># conn.execute(text(&quot;ALTER TABLE resource DROP COLUMN is_compressed;&quot;))</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE resource DROP COLUMN size_bytes;&quot;</span><span class="p">))</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE resource DROP COLUMN tags;&quot;</span><span class="p">))</span>
 
-    <span class="n">key</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">(),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">())</span>
-
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;Metadata(key=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;, value=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;)&gt;&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="Resource">
-<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.models.Resource">[docs]</a>
-<span class="k">class</span> <span class="nc">Resource</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resource information stored in cache.</span>
-
-<span class="sd">    Attributes:</span>
-<span class="sd">        id:</span>
-<span class="sd">            Auto-incrementing primary key.</span>
-
-<span class="sd">        rid:</span>
-<span class="sd">            Unique resource identifier (UUID).</span>
-
-<span class="sd">        rname:</span>
-<span class="sd">            User-provided resource name.</span>
-
-<span class="sd">        create_time:</span>
-<span class="sd">            When the resource was first added.</span>
-
-<span class="sd">        access_time:</span>
-<span class="sd">            Last time the resource was accessed.</span>
-
-<span class="sd">        rpath:</span>
-<span class="sd">            Path to the resource in the cache.</span>
-
-<span class="sd">        rtype:</span>
-<span class="sd">            Type of resource (local, web, relative).</span>
-
-<span class="sd">        fpath:</span>
-<span class="sd">            Original file path.</span>
-
-<span class="sd">        last_modified_time:</span>
-<span class="sd">            Last time the resource was modified.</span>
-
-<span class="sd">        etag:</span>
-<span class="sd">            Checksum/hash of the resource.</span>
-
-<span class="sd">        expires:</span>
-<span class="sd">            When the resource should be considered expired.</span>
-
-<span class="sd">        tags:</span>
-<span class="sd">            Optional comma-separated tags for categorization.</span>
-
-<span class="sd">        size_bytes:</span>
-<span class="sd">            Size of the resource in bytes.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;resource&quot;</span>
-
-    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">autoincrement</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">rid</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">(),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">rname</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">(),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">create_time</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
-    <span class="n">access_time</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
-    <span class="n">rpath</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">())</span>
-    <span class="n">rtype</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">())</span>
-    <span class="n">fpath</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">())</span>
-    <span class="n">last_modified_time</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">onupdate</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
-    <span class="n">etag</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">())</span>
-    <span class="n">expires</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">)</span>
-    <span class="n">tags</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">())</span>
-    <span class="n">size_bytes</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;Resource(id=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&#39;, rname=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;)&gt;&quot;</span></div>
+            <span class="c1"># Update metadata</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">text</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                UPDATE metadata</span>
+<span class="s2">                SET value = &#39;0.4.1&#39;</span>
+<span class="s2">                WHERE key = &#39;schema_version&#39;;</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="p">)</span></div>
+</div>
 
 </pre></div>
         </article>
@@ -366,9 +387,9 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=ff90ab21"></script>
-    <script src="../../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
+</div><script src="../../../_static/documentation_options.js?v=ff90ab21"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
     </body>
 </html>
