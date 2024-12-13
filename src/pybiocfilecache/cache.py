@@ -19,6 +19,7 @@ from .exceptions import (
     RnameExistsError,
     RpathTimeoutError,
 )
+from .migrations import Migrator
 from .models import Base, Resource
 from .utils import (
     calculate_file_hash,
@@ -68,6 +69,29 @@ class BiocFileCache:
         self._setup_cache_dir()
         self._setup_database()
         self._last_cleanup = datetime.now()
+
+        # Initialize migrator
+        self.migrator = Migrator(self.engine)
+
+        # Run migrations
+        try:
+            self.migrator.migrate()
+        except Exception as e:
+            logger.error(f"Failed to run migrations: {e}")
+            raise
+
+    def get_schema_version(self) -> str:
+        """Get current schema version."""
+        return self.migrator.get_current_version()
+
+    def migrate_schema(self, target_version: Optional[str] = None) -> None:
+        """Migrate schema to specified version.
+
+        Args:
+            target_version: Version to migrate to.
+                          If None, migrates to latest version.
+        """
+        self.migrator.migrate(target_version)
 
     def _setup_cache_dir(self) -> None:
         if not self.config.cache_dir.exists():
