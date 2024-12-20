@@ -5,3 +5,4 @@ furo
 # sphinx_rtd_theme
 recommonmark
 sphinx>=3.2.1
+sphinx-autodoc-typehints
