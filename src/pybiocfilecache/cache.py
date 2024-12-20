@@ -62,10 +62,11 @@ class BiocFileCache:
             config = CacheConfig(cache_dir=cache_dir)
 
         self.config = config
-        new_db = self._setup_cache_dir()
-        db_schema_version = self._setup_database(new_db)
+        self._setup_cache_dir()
+        db_schema_version = self._setup_database()
 
         if db_schema_version != SCHEMA_VERSION:
+            print(db_schema_version)
             raise RuntimeError(f"Database version is not {SCHEMA_VERSION}.")
 
         self._last_cleanup = datetime.now()
@@ -73,11 +74,8 @@ class BiocFileCache:
     def _setup_cache_dir(self) -> bool:
         if not self.config.cache_dir.exists():
             self.config.cache_dir.mkdir(parents=True, exist_ok=True)
-            return True
 
-        return False
-
-    def _setup_database(self, new_database_directory: bool = True) -> None:
+    def _setup_database(self) -> None:
         db_path = self.config.cache_dir / "BiocFileCache.sqlite"
         self.engine = create_engine(
             f"sqlite:///{db_path}",
@@ -91,28 +89,27 @@ class BiocFileCache:
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
-        if new_database_directory is True:
-            with self.engine.connect() as conn:
-                result = conn.execute(
-                    text("""
-                    SELECT value FROM metadata
-                    WHERE key = 'schema_version'
-                """)
-                )
-                row = result.fetchone()
+        with self.engine.connect() as conn:
+            result = conn.execute(
+                text("""
+                SELECT value FROM metadata
+                WHERE key = 'schema_version'
+            """)
+            )
+            row = result.fetchone()
 
-                if row is not None:
-                    return row[0]
+            if row is not None:
+                return row[0]
 
-                conn.execute(
-                    text("""
-                    INSERT INTO metadata (key, value)
-                    VALUES ('schema_version', :version);
-                """),
-                    {"version": SCHEMA_VERSION},
-                )
+            conn.execute(
+                text("""
+                INSERT INTO metadata (key, value)
+                VALUES ('schema_version', :version);
+            """),
+                {"version": SCHEMA_VERSION},
+            )
 
-                return SCHEMA_VERSION
+            return SCHEMA_VERSION
 
     def _get_detached_resource(self, session: Session, resource: Resource) -> Optional[Resource]:
         """Get a detached copy of a resource."""
