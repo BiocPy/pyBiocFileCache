@@ -2,7 +2,7 @@
 
 ## Version 0.6.0
 
-- Reverting schema changes that break compatibility with the R/BiocFileCache implementation. 
+- Reverting schema changes that break compatibility with the R/BiocFileCache implementation.
 - Added support for Python 3.13
 
 ## Version 0.5.5
