@@ -17,7 +17,7 @@ def test_create_cache():
     bfc.purge()
 
 
-def test_add_get_operations():
+def test_add_get_list_operations():
     bfc = BiocFileCache(CACHE_DIR)
 
     rtrip = bfc.add("test1", os.getcwd() + "/tests/data/test1.txt")

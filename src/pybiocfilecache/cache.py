@@ -6,14 +6,14 @@ from pathlib import Path
 from time import sleep, time
 from typing import Any, Dict, Iterator, List, Literal, Optional, Tuple, Union
 
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, func, text
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
 from .config import CacheConfig
+from .const import SCHEMA_VERSION
 from .exceptions import (
     BiocCacheError,
-    CacheSizeLimitError,
     InvalidRnameError,
     NoFpathError,
     RnameExistsError,
@@ -25,7 +25,6 @@ from .utils import (
     copy_or_move,
     create_tmp_dir,
     generate_id,
-    get_file_size,
     validate_rname,
 )
 
@@ -42,9 +41,7 @@ class BiocFileCache:
     Features:
     - Resource validation and integrity checking
     - Cache size management
-    - File compression
-    - Resource tagging
-    - Automatic cleanup of expired resources
+    - Cleanup of expired resources
     """
 
     def __init__(self, cache_dir: Optional[Union[str, Path]] = None, config: Optional[CacheConfig] = None):
@@ -66,10 +63,15 @@ class BiocFileCache:
 
         self.config = config
         self._setup_cache_dir()
-        self._setup_database()
+        db_schema_version = self._setup_database()
+
+        if db_schema_version != SCHEMA_VERSION:
+            print(db_schema_version)
+            raise RuntimeError(f"Database version is not {SCHEMA_VERSION}.")
+
         self._last_cleanup = datetime.now()
 
-    def _setup_cache_dir(self) -> None:
+    def _setup_cache_dir(self) -> bool:
         if not self.config.cache_dir.exists():
             self.config.cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -86,6 +88,28 @@ class BiocFileCache:
 
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+
+        with self.engine.connect() as conn:
+            result = conn.execute(
+                text("""
+                SELECT value FROM metadata
+                WHERE key = 'schema_version'
+            """)
+            )
+            row = result.fetchone()
+
+            if row is not None:
+                return row[0]
+
+            conn.execute(
+                text("""
+                INSERT INTO metadata (key, value)
+                VALUES ('schema_version', :version);
+            """),
+                {"version": SCHEMA_VERSION},
+            )
+
+            return SCHEMA_VERSION
 
     def _get_detached_resource(self, session: Session, resource: Resource) -> Optional[Resource]:
         """Get a detached copy of a resource."""
@@ -117,17 +141,6 @@ class BiocFileCache:
             raise
         finally:
             session.close()
-
-    def _check_cache_size(self, new_size: int) -> None:
-        """Verify cache size limit won't be exceeded."""
-        if self.config.max_size_bytes is None:
-            return
-
-        current_size = self.get_cache_size()
-        if current_size + new_size > self.config.max_size_bytes:
-            raise CacheSizeLimitError(
-                f"Adding {new_size} bytes would exceed cache limit of " f"{self.config.max_size_bytes} bytes"
-            )
 
     def _validate_rname(self, rname: str) -> None:
         """Validate resource name format."""
@@ -218,7 +231,6 @@ class BiocFileCache:
         fpath: Union[str, Path],
         rtype: Literal["local", "web", "relative"] = "local",
         action: Literal["copy", "move", "asis"] = "copy",
-        tags: Optional[List[str]] = None,
         expires: Optional[datetime] = None,
         ext: bool = False,
     ) -> Resource:
@@ -239,9 +251,6 @@ class BiocFileCache:
             action:
                 How to handle the file ("copy", "move", or "asis").
                 Defaults to ``copy``.
-
-            tags:
-                Optional list of tags for categorization.
 
             expires:
                 Optional expiration datetime.
@@ -267,8 +276,6 @@ class BiocFileCache:
         rid = generate_id()
         rpath = self.config.cache_dir / f"{rid}{fpath.suffix if ext else ''}" if action != "asis" else fpath
 
-        self._check_cache_size(get_file_size(fpath))
-
         # Create resource record
         resource = Resource(
             rid=rid,
@@ -276,9 +283,7 @@ class BiocFileCache:
             rpath=str(rpath),
             rtype=rtype,
             fpath=str(fpath),
-            tags=",".join(tags) if tags else None,
             expires=expires,
-            size_bytes=get_file_size(fpath),
         )
 
         # Store file and update database
@@ -287,7 +292,7 @@ class BiocFileCache:
             session.commit()
 
             try:
-                copy_or_move(fpath, rpath, rname, action, self.config.compression)
+                copy_or_move(fpath, rpath, rname, action, False)
 
                 # Calculate and store checksum
                 resource.etag = calculate_file_hash(rpath, self.config.hash_algorithm)
@@ -324,7 +329,6 @@ class BiocFileCache:
         rname: str,
         fpath: Union[str, Path],
         action: Literal["copy", "move", "asis"] = "copy",
-        tags: Optional[List[str]] = None,
     ) -> Resource:
         """Update an existing resource.
 
@@ -338,9 +342,6 @@ class BiocFileCache:
             action:
                 Either ``copy``, ``move`` or ``asis``.
                 Defaults to ``copy``.
-
-            tags:
-                Optional new list of tags.
 
         Returns:
             Updated `Resource` object.
@@ -358,14 +359,10 @@ class BiocFileCache:
 
             old_path = Path(resource.rpath)
             try:
-                copy_or_move(fpath, old_path, rname, action, self.config.compression)
+                copy_or_move(fpath, old_path, rname, action, False)
 
                 resource.last_modified_time = datetime.now()
                 resource.etag = calculate_file_hash(old_path, self.config.hash_algorithm)
-                resource.size_bytes = get_file_size(old_path)
-
-                if tags is not None:
-                    resource.tags = ",".join(tags)
 
                 session.commit()
                 return self._get_detached_resource(session, resource)
@@ -404,14 +401,10 @@ class BiocFileCache:
                     session.rollback()
                     raise BiocCacheError(f"Failed to remove resource '{rname}'") from e
 
-    def list_resources(
-        self, tag: Optional[str] = None, rtype: Optional[str] = None, expired: Optional[bool] = None
-    ) -> List[Resource]:
+    def list_resources(self, rtype: Optional[str] = None, expired: Optional[bool] = None) -> List[Resource]:
         """List resources in the cache with optional filtering.
 
         Args:
-            tag:
-                Filter resources by tag.
 
             rtype:
                 Filter resources by type.
@@ -429,8 +422,6 @@ class BiocFileCache:
         with self.get_session() as session:
             query = session.query(Resource)
 
-            if tag:
-                query = query.filter(Resource.tags.like(f"%{tag}%"))
             if rtype:
                 query = query.filter(Resource.rtype == rtype)
             if expired is not None:
@@ -468,11 +459,6 @@ class BiocFileCache:
             logger.error(f"Failed to validate resource: {resource.rname}", exc_info=e)
             return False
 
-    def get_cache_size(self) -> int:
-        """Get total size of cached files in bytes."""
-        with self.get_session() as session:
-            return session.query(func.sum(Resource.size_bytes)).scalar() or 0
-
     def export_metadata(self, path: Path) -> None:
         """Export cache metadata to JSON file."""
         data = {
@@ -480,14 +466,11 @@ class BiocFileCache:
                 {
                     "rname": r.rname,
                     "rtype": r.rtype,
-                    "tags": r.tags,
                     "expires": r.expires.isoformat() if r.expires else None,
                     "etag": r.etag,
-                    "size_bytes": r.size_bytes,
                 }
                 for r in self.list_resources()
             ],
-            "cache_size": self.get_cache_size(),
             "export_time": datetime.now().isoformat(),
         }
 
@@ -503,7 +486,6 @@ class BiocFileCache:
             for resource_data in data["resources"]:
                 resource = self._get(session, resource_data["rname"])
                 if resource:
-                    resource.tags = resource_data["tags"]
                     resource.expires = (
                         datetime.fromisoformat(resource_data["expires"]) if resource_data["expires"] else None
                     )
@@ -532,7 +514,7 @@ class BiocFileCache:
                 Search string.
 
             field:
-                Resource field to search ("rname", "rtype", "tags", etc.).
+                Resource field to search ("rname", "rtype", etc.).
 
             exact:
                 Whether to require exact match.
@@ -565,7 +547,6 @@ class BiocFileCache:
             return {
                 "total_resources": total,
                 "expired_resources": expired,
-                "cache_size_bytes": self.get_cache_size(),
                 "resource_types": types,
                 "last_cleanup": self._last_cleanup.isoformat(),
                 "cleanup_enabled": self.config.cleanup_interval is not None,
