@@ -44,9 +44,7 @@ from pathlib import Path
 # Create custom configuration
 config = CacheConfig(
     cache_dir=Path("cache_directory"),
-    max_size_bytes=1024 * 1024 * 1024,  # 1GB
     cleanup_interval=timedelta(days=7),
-    compression=True
 )
 
 # Initialize cache with configuration
