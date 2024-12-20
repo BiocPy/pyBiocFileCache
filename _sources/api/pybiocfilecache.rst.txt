@@ -1,14 +1,6 @@
 pybiocfilecache package
 =======================
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   pybiocfilecache.migrations
-
 Submodules
 ----------
 
@@ -24,6 +16,14 @@ pybiocfilecache.config module
 -----------------------------
 
 .. automodule:: pybiocfilecache.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pybiocfilecache.const module
+----------------------------
+
+.. automodule:: pybiocfilecache.const
    :members:
    :undoc-members:
    :show-inheritance:
