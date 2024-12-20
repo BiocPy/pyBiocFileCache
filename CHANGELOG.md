@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.5.5
+
+- chore: Remove Python 3.8 (EOL).
+- precommit: Replace docformatter with ruff's formatter.
+
 ## Version 0.5.0
 
 - SQLAlchemy session management
