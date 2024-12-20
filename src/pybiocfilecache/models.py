@@ -13,7 +13,7 @@ class Metadata(Base):
 
     __tablename__ = "metadata"
 
-    key = Column(Text(), primary_key=True, index=True)
+    key = Column(Text(), primary_key=True, index=True, unique=True)
     value = Column(Text())
 
     def __repr__(self) -> str:
@@ -56,29 +56,21 @@ class Resource(Base):
 
         expires:
             When the resource should be considered expired.
-
-        tags:
-            Optional comma-separated tags for categorization.
-
-        size_bytes:
-            Size of the resource in bytes.
     """
 
     __tablename__ = "resource"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    rid = Column(Text(), index=True)
-    rname = Column(Text(), index=True, unique=True)
+    rid = Column(Text())
+    rname = Column(Text())
     create_time = Column(DateTime, server_default=func.now())
     access_time = Column(DateTime, server_default=func.now())
     rpath = Column(Text())
     rtype = Column(Text())
     fpath = Column(Text())
-    last_modified_time = Column(DateTime, onupdate=func.now())
-    etag = Column(Text())
-    expires = Column(DateTime)
-    tags = Column(Text())
-    size_bytes = Column(Integer)
+    last_modified_time = Column(DateTime, onupdate=func.now(), default=None)
+    etag = Column(Text(), default=None)
+    expires = Column(DateTime, default=None)
 
     def __repr__(self) -> str:
         return f"<Resource(id='{self.id}', rname='{self.rname}')>"
