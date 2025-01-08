@@ -19,7 +19,6 @@ from .utils import (
     download_web_file,
     generate_id,
     generate_uuid,
-    validate_rname,
 )
 
 __author__ = "Jayaram Kancherla"

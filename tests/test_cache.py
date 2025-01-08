@@ -55,7 +55,7 @@ def test_add_get_list_operations():
     assert len(rtrip) == 3
 
     downurl = "https://bioconductor.org/packages/stats/bioc/BiocFileCache/BiocFileCache_2024_stats.tab"
-    add_url = bfc.add(rname="download_link", fpath=downurl, rtype="web") 
+    add_url = bfc.add(rname="download_link", fpath=downurl, rtype="web")
 
     row = bfc.get(rid=add_url.rid)
     assert row.fpath == downurl
@@ -98,7 +98,7 @@ def test_meta_operations():
     bfc.add_metadata("language", "python")
 
     downurl = "https://bioconductor.org/packages/stats/bioc/BiocFileCache/BiocFileCache_2024_stats.tab"
-    add_url = bfc.add(rname="download_link", fpath=downurl, rtype="web") 
+    add_url = bfc.add(rname="download_link", fpath=downurl, rtype="web")
 
     rec = bfc.get_metadata("schema_version")
     assert rec.value == "0.99.4"
