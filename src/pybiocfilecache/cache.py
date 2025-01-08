@@ -11,19 +11,14 @@ from sqlalchemy.pool import QueuePool
 
 from .config import CacheConfig
 from .const import SCHEMA_VERSION
-from .exceptions import (
-    BiocCacheError,
-    InvalidRnameError,
-    NoFpathError,
-    RnameExistsError,
-    RpathTimeoutError,
-)
 from .models import Base, Resource
 from .utils import (
     calculate_file_hash,
     copy_or_move,
     create_tmp_dir,
+    download_web_file,
     generate_id,
+    generate_uuid,
     validate_rname,
 )
 
@@ -145,7 +140,7 @@ class BiocFileCache:
     def _validate_rname(self, rname: str) -> None:
         """Validate resource name format."""
         if not validate_rname(rname, self.config.rname_pattern):
-            raise InvalidRnameError(f"Resource name '{rname}' doesn't match pattern " f"'{self.config.rname_pattern}'")
+            raise Exception(f"Resource name '{rname}' doesn't match pattern " f"'{self.config.rname_pattern}'")
 
     def _should_cleanup(self) -> bool:
         """Check if cache cleanup should be performed.
@@ -213,7 +208,7 @@ class BiocFileCache:
                 timeout = 30
                 while not Path(str(resource.rpath)).exists():
                     if time() - start >= timeout:
-                        raise RpathTimeoutError(
+                        raise TimeoutError(
                             f"For resource: '{rname}' the rpath does not exist " f"after {timeout} seconds."
                         )
                     sleep(0.1)
@@ -229,10 +224,11 @@ class BiocFileCache:
         self,
         rname: str,
         fpath: Union[str, Path],
-        rtype: Literal["local", "web", "relative"] = "local",
+        rtype: Literal["local", "web", "relative"] = "relative",
         action: Literal["copy", "move", "asis"] = "copy",
         expires: Optional[datetime] = None,
-        ext: bool = False,
+        download: bool = True,
+        ext: bool = True,
     ) -> Resource:
         """Add a resource to the cache.
 
@@ -252,13 +248,17 @@ class BiocFileCache:
                 How to handle the file ("copy", "move", or "asis").
                 Defaults to ``copy``.
 
+            download:
+                Whether to download the resource.
+                Only used if 'rtype' is "web".
+
             expires:
                 Optional expiration datetime.
                 If None, resource never expires.
 
             ext:
                 Whether to use filepath extension when storing in cache.
-                Defaults to `False`.
+                Defaults to `True`.
 
         Returns:
             The `Resource` object added to the cache.
@@ -267,14 +267,29 @@ class BiocFileCache:
         fpath = Path(fpath)
 
         if not fpath.exists():
-            raise NoFpathError(f"Resource at '{fpath}' does not exist")
+            raise FileNotFoundError(f"Resource at '{fpath}' does not exist")
 
         if self.get(rname) is not None:
-            raise RnameExistsError(f"Resource '{rname}' already exists")
+            raise FileExistsError(f"Resource '{rname}' already exists")
+
+        if rtype == "web":
+            outpath = download_web_file(fpath, Path(fpath).name, download)
+            action = "copy"
+        else:
+            outpath = fpath
+
+        if action == "asis":
+            logger.warning("If action='asis', rtype must be 'local'.")
+            rtype = "local"
 
         # Generate paths and check size
         rid = generate_id(size=len(self))
-        rpath = self.config.cache_dir / f"{rid}{fpath.suffix if ext else ''}" if action != "asis" else fpath
+        uuid = generate_uuid()
+        rpath = (
+            self.config.cache_dir / f"{uuid}_{outpath.name if ext else outpath.stem}"
+            if action != "asis"
+            else f"{uuid}_{outpath.name}"
+        )
 
         # Create resource record
         resource = Resource(
@@ -292,7 +307,7 @@ class BiocFileCache:
             session.commit()
 
             try:
-                copy_or_move(fpath, rpath, rname, action, False)
+                copy_or_move(outpath, rpath, rname, action, False)
 
                 # Calculate and store checksum
                 resource.etag = calculate_file_hash(rpath, self.config.hash_algorithm)
@@ -303,7 +318,7 @@ class BiocFileCache:
             except Exception as e:
                 session.delete(resource)
                 session.commit()
-                raise BiocCacheError("Failed to add resource") from e
+                raise Exception("Failed to add resource") from e
 
     def add_batch(self, resources: List[Dict[str, Any]]) -> List[Resource]:
         """Add multiple resources in a single transaction.
@@ -349,7 +364,7 @@ class BiocFileCache:
         """
         fpath = Path(fpath)
         if not fpath.exists():
-            raise NoFpathError(f"File '{fpath}' does not exist")
+            raise FileNotFoundError(f"File '{fpath}' does not exist")
 
         with self.get_session() as session:
             resource = session.query(Resource).filter(Resource.rname == rname).first()
@@ -369,7 +384,7 @@ class BiocFileCache:
 
             except Exception as e:
                 session.rollback()
-                raise BiocCacheError("Failed to update resource") from e
+                raise Exception("Failed to update resource") from e
 
     def remove(self, rname: str) -> None:
         """Remove a resource from cache by name.
@@ -399,7 +414,7 @@ class BiocFileCache:
 
                 except Exception as e:
                     session.rollback()
-                    raise BiocCacheError(f"Failed to remove resource '{rname}'") from e
+                    raise Exception(f"Failed to remove resource '{rname}'") from e
 
     def list_resources(self, rtype: Optional[str] = None, expired: Optional[bool] = None) -> List[Resource]:
         """List resources in the cache with optional filtering.
@@ -577,7 +592,7 @@ class BiocFileCache:
                     except Exception as e:
                         if not force:
                             session.rollback()
-                            raise BiocCacheError(f"Failed to remove file for resource '{resource.rname}'") from e
+                            raise Exception(f"Failed to remove file for resource '{resource.rname}'") from e
                         logger.warning(f"Failed to remove file for resource '{resource.rname}': {e}")
 
                 session.commit()
@@ -598,7 +613,7 @@ class BiocFileCache:
 
         except Exception as e:
             if not force:
-                raise BiocCacheError("Failed to purge cache") from e
+                raise Exception("Failed to purge cache") from e
 
             logger.error("Database cleanup failed, forcing file removal", exc_info=e)
             for file in self.config.cache_dir.iterdir():
