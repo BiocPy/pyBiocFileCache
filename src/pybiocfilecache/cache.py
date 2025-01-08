@@ -263,7 +263,7 @@ class BiocFileCache:
         Returns:
             The `Resource` object added to the cache.
         """
-        self._validate_rname(rname)
+        # self._validate_rname(rname)
         fpath = Path(fpath)
 
         if not fpath.exists():
