@@ -22,9 +22,15 @@ def create_tmp_dir() -> Path:
     return Path(tempfile.mkdtemp())
 
 
-def generate_id() -> str:
+def generate_uuid() -> str:
     """Generate unique identifier."""
     return uuid.uuid4().hex
+
+
+def generate_id(size) -> str:
+    """Generate unique identifier."""
+    size += 1
+    return "BFC" + str(size)
 
 
 def validate_rname(rname: str, pattern: str) -> bool:

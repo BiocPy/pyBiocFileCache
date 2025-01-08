@@ -73,4 +73,4 @@ class Resource(Base):
     expires = Column(DateTime, default=None)
 
     def __repr__(self) -> str:
-        return f"<Resource(id='{self.id}', rname='{self.rname}')>"
+        return f"<Resource(rid='{self.rid}', rname='{self.rname}')>"
