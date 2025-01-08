@@ -5,8 +5,8 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
-        <title>pybiocfilecache.cache - pyBiocFileCache 0.6.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+        <title>pybiocfilecache.cache - pyBiocFileCache 0.6.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
     
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.6.0 documentation</div></a>
+      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.6.1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -189,7 +189,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
   
-  <span class="sidebar-brand-text">pyBiocFileCache 0.6.0 documentation</span>
+  <span class="sidebar-brand-text">pyBiocFileCache 0.6.1 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -241,29 +241,28 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for pybiocfilecache.cache</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span><span class="p">,</span> <span class="n">time</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">sleep</span><span class="p">,</span> <span class="n">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">text</span>
-<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">sessionmaker</span>
-<span class="kn">from</span> <span class="nn">sqlalchemy.pool</span> <span class="kn">import</span> <span class="n">QueuePool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">text</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.orm</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">sessionmaker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueuePool</span>
 
-<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">CacheConfig</span>
-<span class="kn">from</span> <span class="nn">.const</span> <span class="kn">import</span> <span class="n">SCHEMA_VERSION</span>
-<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">CacheConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.const</span><span class="w"> </span><span class="kn">import</span> <span class="n">SCHEMA_VERSION</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BiocCacheError</span><span class="p">,</span>
     <span class="n">InvalidRnameError</span><span class="p">,</span>
     <span class="n">NoFpathError</span><span class="p">,</span>
     <span class="n">RnameExistsError</span><span class="p">,</span>
     <span class="n">RpathTimeoutError</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Base</span><span class="p">,</span> <span class="n">Resource</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Base</span><span class="p">,</span> <span class="n">Resource</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">calculate_file_hash</span><span class="p">,</span>
     <span class="n">copy_or_move</span><span class="p">,</span>
     <span class="n">create_tmp_dir</span><span class="p">,</span>
@@ -280,7 +279,7 @@
 
 <div class="viewcode-block" id="BiocFileCache">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache">[docs]</a>
-<span class="k">class</span> <span class="nc">BiocFileCache</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BiocFileCache</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Enhanced file caching module.</span>
 
 <span class="sd">    Features:</span>
@@ -291,7 +290,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.__init__">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CacheConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CacheConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize cache with optional configuration.</span>
 
 <span class="sd">        Args:</span>
@@ -319,11 +318,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_cleanup</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_setup_cache_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_cache_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_setup_database</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_database</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">db_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;BiocFileCache.sqlite&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;sqlite:///</span><span class="si">{</span><span class="n">db_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -356,10 +355,11 @@
 <span class="s2">            &quot;&quot;&quot;</span><span class="p">),</span>
                 <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">SCHEMA_VERSION</span><span class="p">},</span>
             <span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
             <span class="k">return</span> <span class="n">SCHEMA_VERSION</span>
 
-    <span class="k">def</span> <span class="nf">_get_detached_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">resource</span><span class="p">:</span> <span class="n">Resource</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_detached_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">resource</span><span class="p">:</span> <span class="n">Resource</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a detached copy of a resource.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">resource</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -369,19 +369,19 @@
 
 <div class="viewcode-block" id="BiocFileCache.__enter__">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.__enter__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BiocFileCache&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BiocFileCache&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="BiocFileCache.__exit__">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.__exit__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="BiocFileCache.close">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.close">[docs]</a>
-    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up resources.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dispose</span><span class="p">()</span></div>
 
@@ -389,7 +389,7 @@
 <div class="viewcode-block" id="BiocFileCache.get_session">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.get_session">[docs]</a>
     <span class="nd">@contextmanager</span>
-    <span class="k">def</span> <span class="nf">get_session</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Session</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_session</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Session</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide database session with automatic cleanup.&quot;&quot;&quot;</span>
         <span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SessionLocal</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
@@ -402,12 +402,12 @@
             <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_validate_rname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_rname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate resource name format.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">validate_rname</span><span class="p">(</span><span class="n">rname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">rname_pattern</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">InvalidRnameError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resource name &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; doesn&#39;t match pattern &quot;</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">rname_pattern</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_should_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_should_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if cache cleanup should be performed.</span>
 
 <span class="sd">        Returns:</span>
@@ -420,7 +420,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.cleanup">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.cleanup">[docs]</a>
-    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove expired resources from the cache.</span>
 
 <span class="sd">        Returns:</span>
@@ -461,7 +461,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.get">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.get">[docs]</a>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get resource by name from cache.</span>
 
 <span class="sd">        Args:</span>
@@ -493,7 +493,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.add">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.add">[docs]</a>
-    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">fpath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
@@ -531,7 +531,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            The `Resource` object added to the cache.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_rname</span><span class="p">(</span><span class="n">rname</span><span class="p">)</span>
+        <span class="c1"># self._validate_rname(rname)</span>
         <span class="n">fpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fpath</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
@@ -541,7 +541,7 @@
             <span class="k">raise</span> <span class="n">RnameExistsError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resource &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; already exists&quot;</span><span class="p">)</span>
 
         <span class="c1"># Generate paths and check size</span>
-        <span class="n">rid</span> <span class="o">=</span> <span class="n">generate_id</span><span class="p">()</span>
+        <span class="n">rid</span> <span class="o">=</span> <span class="n">generate_id</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
         <span class="n">rpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rid</span><span class="si">}{</span><span class="n">fpath</span><span class="o">.</span><span class="n">suffix</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ext</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">!=</span> <span class="s2">&quot;asis&quot;</span> <span class="k">else</span> <span class="n">fpath</span>
 
         <span class="c1"># Create resource record</span>
@@ -571,12 +571,12 @@
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
                 <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-                <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="s2">&quot;Failed to add resource&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span></div>
+                <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="s2">&quot;Failed to add resource&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
 
 
 <div class="viewcode-block" id="BiocFileCache.add_batch">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.add_batch">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resources</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resources</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add multiple resources in a single transaction.</span>
 
 <span class="sd">        Args:</span>
@@ -598,7 +598,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.update">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.update">[docs]</a>
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">fpath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
@@ -643,12 +643,12 @@
 
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
-                <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="s2">&quot;Failed to update resource&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span></div>
+                <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="s2">&quot;Failed to update resource&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
 
 
 <div class="viewcode-block" id="BiocFileCache.remove">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.remove">[docs]</a>
-    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a resource from cache by name.</span>
 
 <span class="sd">        Removes both the cached file and its database entry.</span>
@@ -676,12 +676,12 @@
 
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
-                    <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove resource &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span></div>
+                    <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove resource &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
 
 
 <div class="viewcode-block" id="BiocFileCache.list_resources">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.list_resources">[docs]</a>
-    <span class="k">def</span> <span class="nf">list_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">expired</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">expired</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;List resources in the cache with optional filtering.</span>
 
 <span class="sd">        Args:</span>
@@ -722,7 +722,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.validate_resource">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.validate_resource">[docs]</a>
-    <span class="k">def</span> <span class="nf">validate_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">:</span> <span class="n">Resource</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">:</span> <span class="n">Resource</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate resource integrity.</span>
 
 <span class="sd">        Args:</span>
@@ -743,48 +743,42 @@
             <span class="k">return</span> <span class="kc">False</span></div>
 
 
-<div class="viewcode-block" id="BiocFileCache.export_metadata">
-<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.export_metadata">[docs]</a>
-    <span class="k">def</span> <span class="nf">export_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export cache metadata to JSON file.&quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;resources&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;rname&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">rname</span><span class="p">,</span>
-                    <span class="s2">&quot;rtype&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">rtype</span><span class="p">,</span>
-                    <span class="s2">&quot;expires&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">expires</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">expires</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="s2">&quot;etag&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">etag</span><span class="p">,</span>
-                <span class="p">}</span>
-                <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_resources</span><span class="p">()</span>
-            <span class="p">],</span>
-            <span class="s2">&quot;export_time&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
-        <span class="p">}</span>
+    <span class="c1"># def export_metadata(self, path: Path) -&gt; None:</span>
+    <span class="c1">#     &quot;&quot;&quot;Export cache metadata to JSON file.&quot;&quot;&quot;</span>
+    <span class="c1">#     data = {</span>
+    <span class="c1">#         &quot;resources&quot;: [</span>
+    <span class="c1">#             {</span>
+    <span class="c1">#                 &quot;rname&quot;: r.rname,</span>
+    <span class="c1">#                 &quot;rtype&quot;: r.rtype,</span>
+    <span class="c1">#                 &quot;expires&quot;: r.expires.isoformat() if r.expires else None,</span>
+    <span class="c1">#                 &quot;etag&quot;: r.etag,</span>
+    <span class="c1">#             }</span>
+    <span class="c1">#             for r in self.list_resources()</span>
+    <span class="c1">#         ],</span>
+    <span class="c1">#         &quot;export_time&quot;: datetime.now().isoformat(),</span>
+    <span class="c1">#     }</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
+    <span class="c1">#     with open(path, &quot;w&quot;) as f:</span>
+    <span class="c1">#         json.dump(data, f, indent=2)</span>
 
+    <span class="c1"># def import_metadata(self, path: Path) -&gt; None:</span>
+    <span class="c1">#     &quot;&quot;&quot;Import cache metadata from JSON file.&quot;&quot;&quot;</span>
+    <span class="c1">#     with open(path) as f:</span>
+    <span class="c1">#         data = json.load(f)</span>
 
-<div class="viewcode-block" id="BiocFileCache.import_metadata">
-<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.import_metadata">[docs]</a>
-    <span class="k">def</span> <span class="nf">import_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Import cache metadata from JSON file.&quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">resource_data</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">]:</span>
-                <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">resource_data</span><span class="p">[</span><span class="s2">&quot;rname&quot;</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">resource</span><span class="p">:</span>
-                    <span class="n">resource</span><span class="o">.</span><span class="n">expires</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">resource_data</span><span class="p">[</span><span class="s2">&quot;expires&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="n">resource_data</span><span class="p">[</span><span class="s2">&quot;expires&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
-                    <span class="p">)</span>
-                    <span class="n">session</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
-            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
-
+    <span class="c1">#     with self.get_session() as session:</span>
+    <span class="c1">#         for resource_data in data[&quot;resources&quot;]:</span>
+    <span class="c1">#             resource = self._get(session, resource_data[&quot;rname&quot;])</span>
+    <span class="c1">#             if resource:</span>
+    <span class="c1">#                 resource.expires = (</span>
+    <span class="c1">#                     datetime.fromisoformat(resource_data[&quot;expires&quot;]) if resource_data[&quot;expires&quot;] else None</span>
+    <span class="c1">#                 )</span>
+    <span class="c1">#                 session.merge(resource)</span>
+    <span class="c1">#         session.commit()</span>
 
 <div class="viewcode-block" id="BiocFileCache.verify_cache">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.verify_cache">[docs]</a>
-    <span class="k">def</span> <span class="nf">verify_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">verify_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify integrity of all cached resources.</span>
 
 <span class="sd">        Returns:</span>
@@ -801,7 +795,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.search">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.search">[docs]</a>
-    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;rname&quot;</span><span class="p">,</span> <span class="n">exact</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;rname&quot;</span><span class="p">,</span> <span class="n">exact</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Search for resources by field value.</span>
 
 <span class="sd">        Args:</span>
@@ -828,7 +822,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.get_stats">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.get_stats">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get statistics about the cache.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="n">total</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
@@ -853,7 +847,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.purge">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.purge">[docs]</a>
-    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove all resources from cache and reset database.</span>
 
 <span class="sd">        Args:</span>
@@ -878,7 +872,7 @@
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
                             <span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
-                            <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove file for resource &#39;</span><span class="si">{</span><span class="n">resource</span><span class="o">.</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+                            <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove file for resource &#39;</span><span class="si">{</span><span class="n">resource</span><span class="o">.</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove file for resource &#39;</span><span class="si">{</span><span class="n">resource</span><span class="o">.</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
                 <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
@@ -899,7 +893,7 @@
 
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="s2">&quot;Failed to purge cache&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+                <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="s2">&quot;Failed to purge cache&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Database cleanup failed, forcing file removal&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
@@ -913,6 +907,13 @@
                         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">file_e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="BiocFileCache.__len__">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.__len__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></div>
 </div>
 
 </pre></div>
@@ -947,7 +948,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=8fa8b3e9"></script>
+</div><script src="../../_static/documentation_options.js?v=2bd037f0"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
