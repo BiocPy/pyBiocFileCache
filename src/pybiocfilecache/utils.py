@@ -2,13 +2,12 @@ import hashlib
 import logging
 import re
 import tempfile
+import urllib.request
 import uuid
 import zlib
 from pathlib import Path
 from shutil import copy2, move
 from typing import Literal
-
-from .exceptions import BiocCacheError
 
 __author__ = "Jayaram Kancherla"
 __copyright__ = "Jayaram Kancherla"
@@ -86,4 +85,15 @@ def copy_or_move(
         elif action == "asis":
             pass
     except Exception as e:
-        raise BiocCacheError(f"Failed to store resource '{rname}' from '{source}' to '{target}'") from e
+        raise Exception(f"Failed to store resource '{rname}' from '{source}' to '{target}'") from e
+
+
+def download_web_file(url: str, filename: str, download: bool):
+    tmp_dir = create_tmp_dir()
+    outpath = tmp_dir / filename
+    if download:
+        urllib.request.urlretrieve(str(url), str(outpath))
+    else:
+        open(str(outpath), "a").close()
+
+    return outpath
