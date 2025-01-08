@@ -1,6 +1,6 @@
 [![Project generated with PyScaffold](https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold)](https://pyscaffold.org/)
 [![PyPI-Server](https://img.shields.io/pypi/v/pyBiocFileCache.svg)](https://pypi.org/project/pyBiocFileCache/)
-![Unit tests](https://github.com/BiocPy/pyBiocFileCache/actions/workflows/pypi-test.yml/badge.svg)
+![Unit tests](https://github.com/BiocPy/pyBiocFileCache/actions/workflows/run-tests.yml/badge.svg)
 
 # pyBiocFileCache
 

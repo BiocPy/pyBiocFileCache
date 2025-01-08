@@ -1,4 +1,3 @@
-import json
 import logging
 from contextlib import contextmanager
 from datetime import datetime
@@ -108,6 +107,7 @@ class BiocFileCache:
             """),
                 {"version": SCHEMA_VERSION},
             )
+            conn.commit()
 
             return SCHEMA_VERSION
 
@@ -263,7 +263,7 @@ class BiocFileCache:
         Returns:
             The `Resource` object added to the cache.
         """
-        self._validate_rname(rname)
+        # self._validate_rname(rname)
         fpath = Path(fpath)
 
         if not fpath.exists():
@@ -273,7 +273,7 @@ class BiocFileCache:
             raise RnameExistsError(f"Resource '{rname}' already exists")
 
         # Generate paths and check size
-        rid = generate_id()
+        rid = generate_id(size=len(self))
         rpath = self.config.cache_dir / f"{rid}{fpath.suffix if ext else ''}" if action != "asis" else fpath
 
         # Create resource record
@@ -459,38 +459,38 @@ class BiocFileCache:
             logger.error(f"Failed to validate resource: {resource.rname}", exc_info=e)
             return False
 
-    def export_metadata(self, path: Path) -> None:
-        """Export cache metadata to JSON file."""
-        data = {
-            "resources": [
-                {
-                    "rname": r.rname,
-                    "rtype": r.rtype,
-                    "expires": r.expires.isoformat() if r.expires else None,
-                    "etag": r.etag,
-                }
-                for r in self.list_resources()
-            ],
-            "export_time": datetime.now().isoformat(),
-        }
+    # def export_metadata(self, path: Path) -> None:
+    #     """Export cache metadata to JSON file."""
+    #     data = {
+    #         "resources": [
+    #             {
+    #                 "rname": r.rname,
+    #                 "rtype": r.rtype,
+    #                 "expires": r.expires.isoformat() if r.expires else None,
+    #                 "etag": r.etag,
+    #             }
+    #             for r in self.list_resources()
+    #         ],
+    #         "export_time": datetime.now().isoformat(),
+    #     }
 
-        with open(path, "w") as f:
-            json.dump(data, f, indent=2)
+    #     with open(path, "w") as f:
+    #         json.dump(data, f, indent=2)
 
-    def import_metadata(self, path: Path) -> None:
-        """Import cache metadata from JSON file."""
-        with open(path) as f:
-            data = json.load(f)
+    # def import_metadata(self, path: Path) -> None:
+    #     """Import cache metadata from JSON file."""
+    #     with open(path) as f:
+    #         data = json.load(f)
 
-        with self.get_session() as session:
-            for resource_data in data["resources"]:
-                resource = self._get(session, resource_data["rname"])
-                if resource:
-                    resource.expires = (
-                        datetime.fromisoformat(resource_data["expires"]) if resource_data["expires"] else None
-                    )
-                    session.merge(resource)
-            session.commit()
+    #     with self.get_session() as session:
+    #         for resource_data in data["resources"]:
+    #             resource = self._get(session, resource_data["rname"])
+    #             if resource:
+    #                 resource.expires = (
+    #                     datetime.fromisoformat(resource_data["expires"]) if resource_data["expires"] else None
+    #                 )
+    #                 session.merge(resource)
+    #         session.commit()
 
     def verify_cache(self) -> Tuple[int, int]:
         """Verify integrity of all cached resources.
@@ -612,3 +612,7 @@ class BiocFileCache:
                         logger.warning(f"Failed to remove {file}: {file_e}")
 
             return False
+
+    def __len__(self):
+        with self.get_session() as session:
+            return session.query(Resource).count()
