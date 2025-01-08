@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
-        <title>pybiocfilecache.cache - pyBiocFileCache 0.6.1 documentation</title>
+        <title>pybiocfilecache.cache - pyBiocFileCache 0.6.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.6.1 documentation</div></a>
+      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.6.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -189,7 +189,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
   
-  <span class="sidebar-brand-text">pyBiocFileCache 0.6.1 documentation</span>
+  <span class="sidebar-brand-text">pyBiocFileCache 0.6.2 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -254,20 +254,14 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">CacheConfig</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.const</span><span class="w"> </span><span class="kn">import</span> <span class="n">SCHEMA_VERSION</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BiocCacheError</span><span class="p">,</span>
-    <span class="n">InvalidRnameError</span><span class="p">,</span>
-    <span class="n">NoFpathError</span><span class="p">,</span>
-    <span class="n">RnameExistsError</span><span class="p">,</span>
-    <span class="n">RpathTimeoutError</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Base</span><span class="p">,</span> <span class="n">Resource</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Base</span><span class="p">,</span> <span class="n">Metadata</span><span class="p">,</span> <span class="n">Resource</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">calculate_file_hash</span><span class="p">,</span>
     <span class="n">copy_or_move</span><span class="p">,</span>
     <span class="n">create_tmp_dir</span><span class="p">,</span>
+    <span class="n">download_web_file</span><span class="p">,</span>
     <span class="n">generate_id</span><span class="p">,</span>
-    <span class="n">validate_rname</span><span class="p">,</span>
+    <span class="n">generate_uuid</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Jayaram Kancherla&quot;</span>
@@ -312,7 +306,6 @@
         <span class="n">db_schema_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_database</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">db_schema_version</span> <span class="o">!=</span> <span class="n">SCHEMA_VERSION</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">db_schema_version</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Database version is not </span><span class="si">{</span><span class="n">SCHEMA_VERSION</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_cleanup</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span></div>
@@ -359,13 +352,15 @@
 
             <span class="k">return</span> <span class="n">SCHEMA_VERSION</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_detached_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">resource</span><span class="p">:</span> <span class="n">Resource</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_detached_resource</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Resource</span><span class="p">,</span> <span class="n">Metadata</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Resource</span><span class="p">,</span> <span class="n">Metadata</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a detached copy of a resource.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">resource</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="n">session</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
-        <span class="n">session</span><span class="o">.</span><span class="n">expunge</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">resource</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">expunge</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span>
 
 <div class="viewcode-block" id="BiocFileCache.__enter__">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.__enter__">[docs]</a>
@@ -402,10 +397,10 @@
             <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_rname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate resource name format.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">validate_rname</span><span class="p">(</span><span class="n">rname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">rname_pattern</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">InvalidRnameError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resource name &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; doesn&#39;t match pattern &quot;</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">rname_pattern</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="c1"># def _validate_rname(self, rname: str) -&gt; None:</span>
+    <span class="c1">#     &quot;&quot;&quot;Validate resource name format.&quot;&quot;&quot;</span>
+    <span class="c1">#     if not validate_rname(rname, self.config.rname_pattern):</span>
+    <span class="c1">#         raise Exception(f&quot;Resource name &#39;{rname}&#39; doesn&#39;t match pattern &quot; f&quot;&#39;{self.config.rname_pattern}&#39;&quot;)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_should_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if cache cleanup should be performed.</span>
@@ -461,16 +456,25 @@
 
 <div class="viewcode-block" id="BiocFileCache.get">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.get">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get resource by name from cache.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            rname:</span>
 <span class="sd">                Name to identify the resource in cache.</span>
 
+<span class="sd">            rid:</span>
+<span class="sd">                Resource id to search by.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">rname</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;either &#39;rname&#39; or &#39;rid&#39; must be provided.&quot;</span><span class="p">)</span>
+
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
-            <span class="n">resource</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Resource</span><span class="o">.</span><span class="n">rname</span> <span class="o">==</span> <span class="n">rname</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">rname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">resource</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Resource</span><span class="o">.</span><span class="n">rname</span> <span class="o">==</span> <span class="n">rname</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">rid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">resource</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Resource</span><span class="o">.</span><span class="n">rid</span> <span class="o">==</span> <span class="n">rid</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">resource</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># Check if path exists with timeout</span>
@@ -478,7 +482,7 @@
                 <span class="n">timeout</span> <span class="o">=</span> <span class="mi">30</span>
                 <span class="k">while</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">rpath</span><span class="p">))</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span> <span class="o">&gt;=</span> <span class="n">timeout</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="n">RpathTimeoutError</span><span class="p">(</span>
+                        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
                             <span class="sa">f</span><span class="s2">&quot;For resource: &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; the rpath does not exist &quot;</span> <span class="sa">f</span><span class="s2">&quot;after </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2"> seconds.&quot;</span>
                         <span class="p">)</span>
                     <span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
@@ -497,10 +501,11 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">fpath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-        <span class="n">rtype</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;web&quot;</span><span class="p">,</span> <span class="s2">&quot;relative&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>
+        <span class="n">rtype</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;web&quot;</span><span class="p">,</span> <span class="s2">&quot;relative&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;relative&quot;</span><span class="p">,</span>
         <span class="n">action</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;copy&quot;</span><span class="p">,</span> <span class="s2">&quot;move&quot;</span><span class="p">,</span> <span class="s2">&quot;asis&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span>
         <span class="n">expires</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">ext</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">ext</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Resource</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a resource to the cache.</span>
 
@@ -520,29 +525,41 @@
 <span class="sd">                How to handle the file (&quot;copy&quot;, &quot;move&quot;, or &quot;asis&quot;).</span>
 <span class="sd">                Defaults to ``copy``.</span>
 
+<span class="sd">            download:</span>
+<span class="sd">                Whether to download the resource.</span>
+<span class="sd">                Only used if &#39;rtype&#39; is &quot;web&quot;.</span>
+
 <span class="sd">            expires:</span>
 <span class="sd">                Optional expiration datetime.</span>
 <span class="sd">                If None, resource never expires.</span>
 
 <span class="sd">            ext:</span>
 <span class="sd">                Whether to use filepath extension when storing in cache.</span>
-<span class="sd">                Defaults to `False`.</span>
+<span class="sd">                Defaults to `True`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The `Resource` object added to the cache.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># self._validate_rname(rname)</span>
-        <span class="n">fpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">fpath</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">NoFpathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resource at &#39;</span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&#39; does not exist&quot;</span><span class="p">)</span>
+        <span class="n">fpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span> <span class="k">if</span> <span class="n">rtype</span> <span class="o">!=</span> <span class="s2">&quot;web&quot;</span> <span class="k">else</span> <span class="n">fpath</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rname</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">RnameExistsError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resource &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; already exists&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resource &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; already exists&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">rtype</span> <span class="o">==</span> <span class="s2">&quot;web&quot;</span><span class="p">:</span>
+            <span class="n">outpath</span> <span class="o">=</span> <span class="n">download_web_file</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">download</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="s2">&quot;copy&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">outpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;asis&quot;</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;If action=&#39;asis&#39;, rtype must be &#39;local&#39;.&quot;</span><span class="p">)</span>
+            <span class="n">rtype</span> <span class="o">=</span> <span class="s2">&quot;local&quot;</span>
 
         <span class="c1"># Generate paths and check size</span>
         <span class="n">rid</span> <span class="o">=</span> <span class="n">generate_id</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
-        <span class="n">rpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rid</span><span class="si">}{</span><span class="n">fpath</span><span class="o">.</span><span class="n">suffix</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ext</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">!=</span> <span class="s2">&quot;asis&quot;</span> <span class="k">else</span> <span class="n">fpath</span>
+        <span class="n">uuid</span> <span class="o">=</span> <span class="n">generate_uuid</span><span class="p">()</span>
+        <span class="n">rpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">outpath</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ext</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">outpath</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">!=</span> <span class="s2">&quot;asis&quot;</span> <span class="k">else</span> <span class="n">fpath</span>
 
         <span class="c1"># Create resource record</span>
         <span class="n">resource</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span>
@@ -560,7 +577,7 @@
             <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">copy_or_move</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">rpath</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">copy_or_move</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">rpath</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
                 <span class="c1"># Calculate and store checksum</span>
                 <span class="n">resource</span><span class="o">.</span><span class="n">etag</span> <span class="o">=</span> <span class="n">calculate_file_hash</span><span class="p">(</span><span class="n">rpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hash_algorithm</span><span class="p">)</span>
@@ -571,7 +588,7 @@
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
                 <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-                <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="s2">&quot;Failed to add resource&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Failed to add resource&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
 
 
 <div class="viewcode-block" id="BiocFileCache.add_batch">
@@ -623,7 +640,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">fpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fpath</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">NoFpathError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&#39; does not exist&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="n">fpath</span><span class="si">}</span><span class="s2">&#39; does not exist&quot;</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="n">resource</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Resource</span><span class="o">.</span><span class="n">rname</span> <span class="o">==</span> <span class="n">rname</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -643,7 +660,7 @@
 
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
-                <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="s2">&quot;Failed to update resource&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Failed to update resource&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
 
 
 <div class="viewcode-block" id="BiocFileCache.remove">
@@ -658,7 +675,7 @@
 <span class="sd">                Name to identify the resource in cache.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            BiocCacheError: If resource removal fails</span>
+<span class="sd">            Exception: If resource removal fails</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="n">resource</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Resource</span><span class="o">.</span><span class="n">rname</span> <span class="o">==</span> <span class="n">rname</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -676,7 +693,7 @@
 
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
-                    <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove resource &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove resource &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
 
 
 <div class="viewcode-block" id="BiocFileCache.list_resources">
@@ -859,7 +876,7 @@
 <span class="sd">            True if purge was successful, False otherwise.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            BiocCacheError: If purge fails and force=False.</span>
+<span class="sd">            Exception: If purge fails and force=False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
@@ -872,7 +889,7 @@
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
                             <span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
-                            <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove file for resource &#39;</span><span class="si">{</span><span class="n">resource</span><span class="o">.</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove file for resource &#39;</span><span class="si">{</span><span class="n">resource</span><span class="o">.</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove file for resource &#39;</span><span class="si">{</span><span class="n">resource</span><span class="o">.</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
                 <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
@@ -893,7 +910,7 @@
 
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">BiocCacheError</span><span class="p">(</span><span class="s2">&quot;Failed to purge cache&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Failed to purge cache&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Database cleanup failed, forcing file removal&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
@@ -914,6 +931,73 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BiocFileCache.check_metadata_key">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.check_metadata_key">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_metadata_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a key exists in the metadata table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key:</span>
+<span class="sd">                Key to search.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if the key exists, else False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Metadata</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Metadata</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="BiocFileCache.get_metadata">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.get_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a new metadata key&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Metadata</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Metadata</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_detached_resource</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="BiocFileCache.add_metadata">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.add_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a new metadata key&quot;&quot;&quot;</span>
+        <span class="n">exists</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">exists</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">Metadata</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_detached_resource</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Failed to add metadata&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;key&#39;=</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> already exists in metadata.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BiocFileCache.remove_metadata">
+<a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.remove_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a metadata key.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Metadata</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Metadata</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
 </div>
 
 </pre></div>
@@ -948,7 +1032,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2bd037f0"></script>
+</div><script src="../../_static/documentation_options.js?v=1c28bd9a"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>

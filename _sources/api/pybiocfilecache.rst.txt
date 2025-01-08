@@ -28,14 +28,6 @@ pybiocfilecache.const module
    :undoc-members:
    :show-inheritance:
 
-pybiocfilecache.exceptions module
----------------------------------
-
-.. automodule:: pybiocfilecache.exceptions
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pybiocfilecache.models module
 -----------------------------
 

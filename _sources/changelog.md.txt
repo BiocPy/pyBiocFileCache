@@ -1,9 +1,11 @@
 # Changelog
 
-## Version 0.6.1
+## Version 0.6.1 - 0.6.2
 
 - Generate rid's that match with R's cache.
-- remove rname pattern checks.
+- Remove rname pattern checks.
+- Add functions to access metadata table.
+- Add function to add web urls and download them if needed.
 - Rename GitHub actions for consistency with the rest of the packages.
 
 ## Version 0.6.0
