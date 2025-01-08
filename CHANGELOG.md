@@ -4,7 +4,7 @@
 
 - Generate rid's that match with R's cache.
 - remove rname pattern checks.
-- Rename GitHub actions for consistency with the rest of the packages. 
+- Rename GitHub actions for consistency with the rest of the packages.
 
 ## Version 0.6.0
 
