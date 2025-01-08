@@ -191,16 +191,25 @@ class BiocFileCache:
         self._last_cleanup = datetime.now()
         return removed
 
-    def get(self, rname: str) -> Optional[Resource]:
+    def get(self, rname: str = None, rid: str = None) -> Optional[Resource]:
         """Get resource by name from cache.
 
         Args:
             rname:
                 Name to identify the resource in cache.
 
+            rid:
+                Resource id to search by.
+
         """
+        if rname is None and rid is None:
+            raise ValueError("either 'rname' or 'rid' must be provided.")
+
         with self.get_session() as session:
-            resource = session.query(Resource).filter(Resource.rname == rname).first()
+            if rname is not None:
+                resource = session.query(Resource).filter(Resource.rname == rname).first()
+            elif rid is not None:
+                resource = session.query(Resource).filter(Resource.rid == rid).first()
 
             if resource is not None:
                 # Check if path exists with timeout
