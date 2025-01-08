@@ -108,6 +108,7 @@ class BiocFileCache:
             """),
                 {"version": SCHEMA_VERSION},
             )
+            conn.commit()
 
             return SCHEMA_VERSION
 
