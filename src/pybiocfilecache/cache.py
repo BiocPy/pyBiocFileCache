@@ -1,4 +1,3 @@
-import json
 import logging
 from contextlib import contextmanager
 from datetime import datetime
@@ -19,7 +18,7 @@ from .exceptions import (
     RnameExistsError,
     RpathTimeoutError,
 )
-from .models import Base, Metadata, Resource
+from .models import Base, Resource
 from .utils import (
     calculate_file_hash,
     copy_or_move,
