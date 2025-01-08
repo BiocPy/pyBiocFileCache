@@ -106,13 +106,15 @@ class BiocFileCache:
 
             return SCHEMA_VERSION
 
-    def _get_detached_resource(self, session: Session, resource: Resource) -> Optional[Resource]:
+    def _get_detached_resource(
+        self, session: Session, obj: Union[Resource, Metadata]
+    ) -> Optional[Union[Resource, Metadata]]:
         """Get a detached copy of a resource."""
-        if resource is None:
+        if obj is None:
             return None
-        session.refresh(resource)
-        session.expunge(resource)
-        return resource
+        session.refresh(obj)
+        session.expunge(obj)
+        return obj
 
     def __enter__(self) -> "BiocFileCache":
         return self
@@ -137,10 +139,10 @@ class BiocFileCache:
         finally:
             session.close()
 
-    def _validate_rname(self, rname: str) -> None:
-        """Validate resource name format."""
-        if not validate_rname(rname, self.config.rname_pattern):
-            raise Exception(f"Resource name '{rname}' doesn't match pattern " f"'{self.config.rname_pattern}'")
+    # def _validate_rname(self, rname: str) -> None:
+    #     """Validate resource name format."""
+    #     if not validate_rname(rname, self.config.rname_pattern):
+    #         raise Exception(f"Resource name '{rname}' doesn't match pattern " f"'{self.config.rname_pattern}'")
 
     def _should_cleanup(self) -> bool:
         """Check if cache cleanup should be performed.
@@ -645,20 +647,33 @@ class BiocFileCache:
             True if the key exists, else False.
         """
         with self.get_session() as session:
-            return session.query(Metadata).filter(Metadata.key == key).first() is not None
+            return session.query(Metadata).filter(Metadata.key == key).count() != 0
+
+    def get_metadata(self, key: str):
+        """Add a new metadata key"""
+        with self.get_session() as session:
+            meta = session.query(Metadata).filter(Metadata.key == key).first()
+            if meta is not None:
+                return self._get_detached_resource(session, meta)
+
+        return None
 
     def add_metadata(self, key: str, value: str):
         """Add a new metadata key"""
-        exists = self.check_metadata_key(key=key)
+        exists = self.get_metadata(key=key)
 
-        if exists:
-            # add
+        if exists is None:
             meta = Metadata(key=key, value=value)
 
-            # Store file and update database
             with self.get_session() as session:
-                session.add(meta)
-                session.commit()
+                try:
+                    session.add(meta)
+                    session.commit()
+                    return self._get_detached_resource(session, meta)
+                except Exception as e:
+                    session.delete(meta)
+                    session.commit()
+                    raise Exception("Failed to add metadata") from e
         else:
             raise Exception(f"'key'={key} already exists in metadata.")
 
