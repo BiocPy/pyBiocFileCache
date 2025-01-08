@@ -11,7 +11,7 @@ from sqlalchemy.pool import QueuePool
 
 from .config import CacheConfig
 from .const import SCHEMA_VERSION
-from .models import Base, Resource
+from .models import Base, Metadata, Resource
 from .utils import (
     calculate_file_hash,
     copy_or_move,
@@ -405,7 +405,7 @@ class BiocFileCache:
                 Name to identify the resource in cache.
 
         Raises:
-            BiocCacheError: If resource removal fails
+            Exception: If resource removal fails
         """
         with self.get_session() as session:
             resource = session.query(Resource).filter(Resource.rname == rname).first()
@@ -588,7 +588,7 @@ class BiocFileCache:
             True if purge was successful, False otherwise.
 
         Raises:
-            BiocCacheError: If purge fails and force=False.
+            Exception: If purge fails and force=False.
         """
         try:
             with self.get_session() as session:
@@ -640,3 +640,45 @@ class BiocFileCache:
     def __len__(self):
         with self.get_session() as session:
             return session.query(Resource).count()
+
+    def check_metadata_key(self, key: str) -> bool:
+        """Check if a key exists in the metadata table.
+
+        Args:
+            key:
+                Key to search.
+
+        Returns:
+            True if the key exists, else False.
+        """
+        with self.get_session() as session:
+            return session.query(Metadata).filter(Metadata.key == key).first() is not None
+
+    def add_metadata(self, key: str, value: str):
+        """Add a new metadata key"""
+        exists = self.check_metadata_key(key=key)
+
+        if exists:
+            # add
+            meta = Metadata(key=key, value=value)
+
+            # Store file and update database
+            with self.get_session() as session:
+                session.add(meta)
+                session.commit()
+        else:
+            raise Exception(f"'key'={key} already exists in metadata.")
+
+    def remove_metadata(self, key: str) -> None:
+        """Remove a metadata key."""
+        with self.get_session() as session:
+            meta = session.query(Metadata).filter(Metadata.key == key).first()
+
+            if meta is not None:
+                try:
+                    session.delete(meta)
+                    session.commit()
+
+                except Exception as e:
+                    session.rollback()
+                    raise Exception(f"Failed to remove key '{key}'") from e
