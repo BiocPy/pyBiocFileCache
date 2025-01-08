@@ -88,7 +88,7 @@ def copy_or_move(
         raise Exception(f"Failed to store resource '{rname}' from '{source}' to '{target}'") from e
 
 
-def download_web_file(url: str, filename: str, download:bool):
+def download_web_file(url: str, filename: str, download: bool):
     tmp_dir = create_tmp_dir()
 
     outpath = tmp_dir / filename
@@ -96,4 +96,4 @@ def download_web_file(url: str, filename: str, download:bool):
     if download:
         urllib.request.urlretrieve(url, filename=outpath)
     else:
-        open(outpath, 'a').close()
+        open(outpath, "a").close()
