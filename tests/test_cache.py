@@ -27,9 +27,7 @@ def test_add_get_list_operations():
     bfc = BiocFileCache(CACHE_DIR)
 
     rtrip = bfc.add("test1", os.getcwd() + "/tests/data/test1.txt")
-    print("rtrip: ", rtrip)
     rec1 = bfc.get("test1")
-    print("rec1: ", rec1)
     assert rec1 is not None
 
     bfc.add("test2", os.getcwd() + "/tests/data/test2.txt")

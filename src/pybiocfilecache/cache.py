@@ -59,7 +59,6 @@ class BiocFileCache:
         db_schema_version = self._setup_database()
 
         if db_schema_version != SCHEMA_VERSION:
-            print(db_schema_version)
             raise RuntimeError(f"Database version is not {SCHEMA_VERSION}.")
 
         self._last_cleanup = datetime.now()

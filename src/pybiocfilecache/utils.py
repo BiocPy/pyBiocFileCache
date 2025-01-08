@@ -92,8 +92,6 @@ def download_web_file(url: str, filename: str, download: bool):
     tmp_dir = create_tmp_dir()
     outpath = tmp_dir / filename
     if download:
-        print(url, str(outpath))
-        print(type(url))
         urllib.request.urlretrieve(str(url), str(outpath))
     else:
         open(str(outpath), "a").close()
