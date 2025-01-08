@@ -273,10 +273,7 @@ class BiocFileCache:
             The `Resource` object added to the cache.
         """
         # self._validate_rname(rname)
-        fpath = Path(fpath)
-
-        if not fpath.exists():
-            raise FileNotFoundError(f"Resource at '{fpath}' does not exist")
+        fpath = Path(fpath) if rtype != "web" else fpath
 
         if self.get(rname) is not None:
             raise FileExistsError(f"Resource '{rname}' already exists")
@@ -285,7 +282,7 @@ class BiocFileCache:
             outpath = download_web_file(fpath, Path(fpath).name, download)
             action = "copy"
         else:
-            outpath = fpath
+            outpath = Path(fpath)
 
         if action == "asis":
             logger.warning("If action='asis', rtype must be 'local'.")
@@ -294,11 +291,7 @@ class BiocFileCache:
         # Generate paths and check size
         rid = generate_id(size=len(self))
         uuid = generate_uuid()
-        rpath = (
-            self.config.cache_dir / f"{uuid}_{outpath.name if ext else outpath.stem}"
-            if action != "asis"
-            else f"{uuid}_{outpath.name}"
-        )
+        rpath = self.config.cache_dir / f"{uuid}_{outpath.name if ext else outpath.stem}" if action != "asis" else fpath
 
         # Create resource record
         resource = Resource(
