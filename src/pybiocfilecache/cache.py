@@ -217,9 +217,7 @@ class BiocFileCache:
                 timeout = 30
                 while not Path(str(resource.rpath)).exists():
                     if time() - start >= timeout:
-                        raise TimeoutError(
-                            f"For resource: '{rname}' the rpath does not exist " f"after {timeout} seconds."
-                        )
+                        raise TimeoutError(f"For resource: '{rname}' the rpath does not exist after {timeout} seconds.")
                     sleep(0.1)
 
                 # Update access time
