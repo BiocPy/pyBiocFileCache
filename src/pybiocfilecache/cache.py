@@ -5,6 +5,7 @@ from pathlib import Path
 from time import sleep, time
 from typing import Any, Dict, Iterator, List, Literal, Optional, Tuple, Union
 
+from biocframe import BiocFrame
 from sqlalchemy import create_engine, func, text
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
@@ -14,6 +15,7 @@ from .const import SCHEMA_VERSION
 from .models import Base, Metadata, Resource
 from .utils import (
     calculate_file_hash,
+    convert_to_columnar,
     copy_or_move,
     create_tmp_dir,
     download_web_file,
@@ -104,15 +106,19 @@ class BiocFileCache:
 
             return SCHEMA_VERSION
 
-    def _get_detached_resource(
-        self, session: Session, obj: Union[Resource, Metadata]
-    ) -> Optional[Union[Resource, Metadata]]:
+    def _get_detached_resource(self, session: Session, obj: Union[Resource, Metadata]) -> Optional[dict]:
         """Get a detached copy of a resource."""
         if obj is None:
             return None
         session.refresh(obj)
         session.expunge(obj)
-        return obj
+        obj_dict = obj.to_dict()
+
+        if isinstance(obj, Resource):
+            if obj_dict["rtype"] == "relative":
+                obj_dict["rpath"] = f'{self.config.cache_dir}/{obj_dict["rpath"]}'
+
+        return obj_dict
 
     def __enter__(self) -> "BiocFileCache":
         return self
@@ -136,6 +142,10 @@ class BiocFileCache:
             raise
         finally:
             session.close()
+
+    #########################
+    ######>> cleanup <<######
+    #########################
 
     # def _validate_rname(self, rname: str) -> None:
     #     """Validate resource name format."""
@@ -191,7 +201,11 @@ class BiocFileCache:
         self._last_cleanup = datetime.now()
         return removed
 
-    def get(self, rname: str = None, rid: str = None) -> Optional[Resource]:
+    ###############################
+    ######>> get resources <<######
+    ###############################
+
+    def get(self, rname: str = None, rid: str = None) -> Optional[dict]:
         """Get resource by name from cache.
 
         Args:
@@ -215,7 +229,7 @@ class BiocFileCache:
                 # Check if path exists with timeout
                 start = time()
                 timeout = 30
-                while not Path(str(resource.rpath)).exists():
+                while not Path(str(self.config.cache_dir / resource.rpath)).exists():
                     if time() - start >= timeout:
                         raise TimeoutError(f"For resource: '{rname}' the rpath does not exist after {timeout} seconds.")
                     sleep(0.1)
@@ -236,7 +250,7 @@ class BiocFileCache:
         expires: Optional[datetime] = None,
         download: bool = True,
         ext: bool = True,
-    ) -> Resource:
+    ) -> dict:
         """Add a resource to the cache.
 
         Args:
@@ -268,7 +282,7 @@ class BiocFileCache:
                 Defaults to `True`.
 
         Returns:
-            The `Resource` object added to the cache.
+            The `Resource` object added to the cache as dictionary.
         """
         # self._validate_rname(rname)
         fpath = Path(fpath) if rtype != "web" else fpath
@@ -289,7 +303,7 @@ class BiocFileCache:
         # Generate paths and check size
         rid = generate_id(size=len(self))
         uuid = generate_uuid()
-        rpath = self.config.cache_dir / f"{uuid}_{outpath.name if ext else outpath.stem}" if action != "asis" else fpath
+        rpath = f"{uuid}_{outpath.name if ext else outpath.stem}" if action != "asis" else fpath
 
         # Create resource record
         resource = Resource(
@@ -307,10 +321,10 @@ class BiocFileCache:
             session.commit()
 
             try:
-                copy_or_move(outpath, rpath, rname, action, False)
+                copy_or_move(outpath, self.config.cache_dir / rpath, rname, action, False)
 
                 # Calculate and store checksum
-                resource.etag = calculate_file_hash(rpath, self.config.hash_algorithm)
+                resource.etag = calculate_file_hash(self.config.cache_dir / rpath, self.config.hash_algorithm)
                 session.commit()
                 result = self._get_detached_resource(session, resource)
                 return result
@@ -320,7 +334,7 @@ class BiocFileCache:
                 session.commit()
                 raise Exception("Failed to add resource") from e
 
-    def add_batch(self, resources: List[Dict[str, Any]]) -> List[Resource]:
+    def add_batch(self, resources: List[Dict[str, Any]]) -> BiocFrame:
         """Add multiple resources in a single transaction.
 
         Args:
@@ -344,7 +358,7 @@ class BiocFileCache:
         rname: str,
         fpath: Union[str, Path],
         action: Literal["copy", "move", "asis"] = "copy",
-    ) -> Resource:
+    ) -> dict:
         """Update an existing resource.
 
         Args:
@@ -359,7 +373,7 @@ class BiocFileCache:
                 Defaults to ``copy``.
 
         Returns:
-            Updated `Resource` object.
+            Updated `Resource` object as dictionary.
 
         """
         fpath = Path(fpath)
@@ -416,7 +430,7 @@ class BiocFileCache:
                     session.rollback()
                     raise Exception(f"Failed to remove resource '{rname}'") from e
 
-    def list_resources(self, rtype: Optional[str] = None, expired: Optional[bool] = None) -> List[Resource]:
+    def list_resources(self, rtype: Optional[str] = None, expired: Optional[bool] = None) -> BiocFrame:
         """List resources in the cache with optional filtering.
 
         Args:
@@ -432,7 +446,7 @@ class BiocFileCache:
                 Note: Resources with no expiration are always considered non-expired.
 
         Returns:
-            List of Resource objects matching the filters
+            List of Resource objects matching the filters.
         """
         with self.get_session() as session:
             query = session.query(Resource)
@@ -452,7 +466,7 @@ class BiocFileCache:
                     )
 
             resources = query.all()
-            return [self._get_detached_resource(session, r) for r in resources]
+            return BiocFrame(convert_to_columnar([self._get_detached_resource(session, r) for r in resources]))
 
     def validate_resource(self, resource: Resource) -> bool:
         """Validate resource integrity.
@@ -521,7 +535,7 @@ class BiocFileCache:
                 invalid += 1
         return valid, invalid
 
-    def search(self, query: str, field: str = "rname", exact: bool = False) -> List[Resource]:
+    def search(self, query: str, field: str = "rname", exact: bool = False) -> BiocFrame:
         """Search for resources by field value.
 
         Args:
@@ -543,7 +557,7 @@ class BiocFileCache:
             else:
                 resources = session.query(Resource).filter(Resource[field].ilike(f"%{query}%")).all()
 
-            return [self._get_detached_resource(session, r) for r in resources]
+            return BiocFrame(convert_to_columnar([self._get_detached_resource(session, r) for r in resources]))
 
     def get_stats(self) -> Dict[str, Any]:
         """Get statistics about the cache."""
@@ -669,7 +683,7 @@ class BiocFileCache:
                 except Exception as e:
                     session.delete(meta)
                     session.commit()
-                    raise Exception("Failed to add metadata") from e
+                    raise Exception("Failed to add metadata", str(e)) from e
         else:
             raise Exception(f"'key'={key} already exists in metadata.")
 
