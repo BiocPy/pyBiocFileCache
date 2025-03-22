@@ -116,7 +116,7 @@ class BiocFileCache:
 
         if isinstance(obj, Resource):
             if obj_dict["rtype"] == "relative":
-                obj_dict["rpath"] = f'{self.config.cache_dir}/{obj_dict["rpath"]}'
+                obj_dict["rpath"] = f"{self.config.cache_dir}/{obj_dict['rpath']}"
 
         return obj_dict
 
