@@ -4,8 +4,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
-        <title>pybiocfilecache.cache - pyBiocFileCache 0.6.2 documentation</title>
+    <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>pybiocfilecache.cache - pyBiocFileCache 0.7.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.6.2 documentation</div></a>
+      <a href="../../index.html"><div class="brand">pyBiocFileCache 0.7.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -189,7 +189,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
   
-  <span class="sidebar-brand-text">pyBiocFileCache 0.6.2 documentation</span>
+  <span class="sidebar-brand-text">pyBiocFileCache 0.7.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -248,6 +248,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">sleep</span><span class="p">,</span> <span class="n">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">biocframe</span><span class="w"> </span><span class="kn">import</span> <span class="n">BiocFrame</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">text</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.orm</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">sessionmaker</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.pool</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueuePool</span>
@@ -257,6 +258,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Base</span><span class="p">,</span> <span class="n">Metadata</span><span class="p">,</span> <span class="n">Resource</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">calculate_file_hash</span><span class="p">,</span>
+    <span class="n">convert_to_columnar</span><span class="p">,</span>
     <span class="n">copy_or_move</span><span class="p">,</span>
     <span class="n">create_tmp_dir</span><span class="p">,</span>
     <span class="n">download_web_file</span><span class="p">,</span>
@@ -352,15 +354,19 @@
 
             <span class="k">return</span> <span class="n">SCHEMA_VERSION</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_detached_resource</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Resource</span><span class="p">,</span> <span class="n">Metadata</span><span class="p">]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Resource</span><span class="p">,</span> <span class="n">Metadata</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_detached_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Resource</span><span class="p">,</span> <span class="n">Metadata</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a detached copy of a resource.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="n">session</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
         <span class="n">session</span><span class="o">.</span><span class="n">expunge</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">obj</span>
+        <span class="n">obj_dict</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Resource</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">obj_dict</span><span class="p">[</span><span class="s2">&quot;rtype&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;relative&quot;</span><span class="p">:</span>
+                <span class="n">obj_dict</span><span class="p">[</span><span class="s2">&quot;rpath&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">obj_dict</span><span class="p">[</span><span class="s1">&#39;rpath&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">obj_dict</span>
 
 <div class="viewcode-block" id="BiocFileCache.__enter__">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.__enter__">[docs]</a>
@@ -396,6 +402,10 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
+
+    <span class="c1">#########################</span>
+    <span class="c1">######&gt;&gt; cleanup &lt;&lt;######</span>
+    <span class="c1">#########################</span>
 
     <span class="c1"># def _validate_rname(self, rname: str) -&gt; None:</span>
     <span class="c1">#     &quot;&quot;&quot;Validate resource name format.&quot;&quot;&quot;</span>
@@ -454,9 +464,13 @@
         <span class="k">return</span> <span class="n">removed</span></div>
 
 
+    <span class="c1">###############################</span>
+    <span class="c1">######&gt;&gt; get resources &lt;&lt;######</span>
+    <span class="c1">###############################</span>
+
 <div class="viewcode-block" id="BiocFileCache.get">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.get">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get resource by name from cache.</span>
 
 <span class="sd">        Args:</span>
@@ -480,11 +494,9 @@
                 <span class="c1"># Check if path exists with timeout</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
                 <span class="n">timeout</span> <span class="o">=</span> <span class="mi">30</span>
-                <span class="k">while</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">rpath</span><span class="p">))</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">while</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="n">resource</span><span class="o">.</span><span class="n">rpath</span><span class="p">))</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span> <span class="o">&gt;=</span> <span class="n">timeout</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;For resource: &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; the rpath does not exist &quot;</span> <span class="sa">f</span><span class="s2">&quot;after </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2"> seconds.&quot;</span>
-                        <span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;For resource: &#39;</span><span class="si">{</span><span class="n">rname</span><span class="si">}</span><span class="s2">&#39; the rpath does not exist after </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2"> seconds.&quot;</span><span class="p">)</span>
                     <span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 
                 <span class="c1"># Update access time</span>
@@ -506,7 +518,7 @@
         <span class="n">expires</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">ext</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Resource</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a resource to the cache.</span>
 
 <span class="sd">        Args:</span>
@@ -538,7 +550,7 @@
 <span class="sd">                Defaults to `True`.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            The `Resource` object added to the cache.</span>
+<span class="sd">            The `Resource` object added to the cache as dictionary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># self._validate_rname(rname)</span>
         <span class="n">fpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span> <span class="k">if</span> <span class="n">rtype</span> <span class="o">!=</span> <span class="s2">&quot;web&quot;</span> <span class="k">else</span> <span class="n">fpath</span>
@@ -559,7 +571,7 @@
         <span class="c1"># Generate paths and check size</span>
         <span class="n">rid</span> <span class="o">=</span> <span class="n">generate_id</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
         <span class="n">uuid</span> <span class="o">=</span> <span class="n">generate_uuid</span><span class="p">()</span>
-        <span class="n">rpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">outpath</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ext</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">outpath</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">!=</span> <span class="s2">&quot;asis&quot;</span> <span class="k">else</span> <span class="n">fpath</span>
+        <span class="n">rpath</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">outpath</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ext</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">outpath</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">!=</span> <span class="s2">&quot;asis&quot;</span> <span class="k">else</span> <span class="n">fpath</span>
 
         <span class="c1"># Create resource record</span>
         <span class="n">resource</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span>
@@ -577,10 +589,10 @@
             <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">copy_or_move</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">rpath</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">copy_or_move</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="n">rpath</span><span class="p">,</span> <span class="n">rname</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
                 <span class="c1"># Calculate and store checksum</span>
-                <span class="n">resource</span><span class="o">.</span><span class="n">etag</span> <span class="o">=</span> <span class="n">calculate_file_hash</span><span class="p">(</span><span class="n">rpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hash_algorithm</span><span class="p">)</span>
+                <span class="n">resource</span><span class="o">.</span><span class="n">etag</span> <span class="o">=</span> <span class="n">calculate_file_hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="n">rpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hash_algorithm</span><span class="p">)</span>
                 <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_detached_resource</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">result</span>
@@ -593,7 +605,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.add_batch">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.add_batch">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resources</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resources</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">BiocFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add multiple resources in a single transaction.</span>
 
 <span class="sd">        Args:</span>
@@ -620,7 +632,7 @@
         <span class="n">rname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">fpath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">action</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;copy&quot;</span><span class="p">,</span> <span class="s2">&quot;move&quot;</span><span class="p">,</span> <span class="s2">&quot;asis&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;copy&quot;</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Resource</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update an existing resource.</span>
 
 <span class="sd">        Args:</span>
@@ -635,7 +647,7 @@
 <span class="sd">                Defaults to ``copy``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Updated `Resource` object.</span>
+<span class="sd">            Updated `Resource` object as dictionary.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">fpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
@@ -698,7 +710,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.list_resources">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.list_resources">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">list_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">expired</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">expired</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BiocFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;List resources in the cache with optional filtering.</span>
 
 <span class="sd">        Args:</span>
@@ -714,7 +726,7 @@
 <span class="sd">                Note: Resources with no expiration are always considered non-expired.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            List of Resource objects matching the filters</span>
+<span class="sd">            List of Resource objects matching the filters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
             <span class="n">query</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span>
@@ -734,7 +746,7 @@
                     <span class="p">)</span>
 
             <span class="n">resources</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_detached_resource</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">]</span></div>
+            <span class="k">return</span> <span class="n">BiocFrame</span><span class="p">(</span><span class="n">convert_to_columnar</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_detached_resource</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">]))</span></div>
 
 
 <div class="viewcode-block" id="BiocFileCache.validate_resource">
@@ -812,7 +824,7 @@
 
 <div class="viewcode-block" id="BiocFileCache.search">
 <a class="viewcode-back" href="../../api/pybiocfilecache.html#pybiocfilecache.cache.BiocFileCache.search">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;rname&quot;</span><span class="p">,</span> <span class="n">exact</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resource</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;rname&quot;</span><span class="p">,</span> <span class="n">exact</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BiocFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Search for resources by field value.</span>
 
 <span class="sd">        Args:</span>
@@ -834,7 +846,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">resources</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Resource</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Resource</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">ilike</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;%</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 
-            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_detached_resource</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">]</span></div>
+            <span class="k">return</span> <span class="n">BiocFrame</span><span class="p">(</span><span class="n">convert_to_columnar</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_detached_resource</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">]))</span></div>
 
 
 <div class="viewcode-block" id="BiocFileCache.get_stats">
@@ -978,7 +990,7 @@
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
                     <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Failed to add metadata&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Failed to add metadata&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;key&#39;=</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> already exists in metadata.&quot;</span><span class="p">)</span></div>
 
@@ -1032,7 +1044,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1c28bd9a"></script>
+</div><script src="../../_static/documentation_options.js?v=fe7df9b0"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>

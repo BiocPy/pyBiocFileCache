@@ -9,45 +9,45 @@ pybiocfilecache.cache module
 
 .. automodule:: pybiocfilecache.cache
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 pybiocfilecache.config module
 -----------------------------
 
 .. automodule:: pybiocfilecache.config
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 pybiocfilecache.const module
 ----------------------------
 
 .. automodule:: pybiocfilecache.const
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 pybiocfilecache.models module
 -----------------------------
 
 .. automodule:: pybiocfilecache.models
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 pybiocfilecache.utils module
 ----------------------------
 
 .. automodule:: pybiocfilecache.utils
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: pybiocfilecache
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
