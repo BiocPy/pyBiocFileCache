@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.7.0
+
+- Fixing issues with using R and Python interfaces to the same cache directory.
+- List resources now returns a `BiocFrame` object.
+
 ## Version 0.6.1 - 0.6.2
 
 - Generate rid's that match with R's cache.

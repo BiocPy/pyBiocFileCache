@@ -34,19 +34,19 @@ def test_add_get_list_operations():
     rec2 = bfc.get("test2")
     assert rec2 is not None
 
-    frec1 = open(rec1.rpath, "r").read().strip()
+    frec1 = open(rec1["rpath"], "r").read().strip()
     assert frec1 == "test1"
 
-    frec2 = open(rec2.rpath, "r").read().strip()
+    frec2 = open(rec2["rpath"], "r").read().strip()
     assert frec2 == "test2"
 
     shutil.copy(os.getcwd() + "/tests/data/test2.txt", os.getcwd() + "/tests/data/test3.txt")
     bfc.add("test3_asis", os.getcwd() + "/tests/data/test3.txt", action="asis")
     rec3 = bfc.get("test3_asis")
     assert rec3 is not None
-    assert rec3.rpath == os.getcwd() + "/tests/data/test3.txt"
+    assert rec3["rpath"] == os.getcwd() + "/tests/data/test3.txt"
 
-    frec3 = open(rec3.rpath, "r").read().strip()
+    frec3 = open(rec3["rpath"], "r").read().strip()
     assert frec3 == "test2"
 
     rtrip = bfc.list_resources()
@@ -55,8 +55,8 @@ def test_add_get_list_operations():
     downurl = "https://bioconductor.org/packages/stats/bioc/BiocFileCache/BiocFileCache_2024_stats.tab"
     add_url = bfc.add(rname="download_link", fpath=downurl, rtype="web")
 
-    row = bfc.get(rid=add_url.rid)
-    assert row.fpath == downurl
+    row = bfc.get(rid=add_url["rid"])
+    assert row["fpath"] == downurl
 
     rtrip = bfc.list_resources()
     assert len(rtrip) == 4
@@ -99,10 +99,10 @@ def test_meta_operations():
     add_url = bfc.add(rname="download_link", fpath=downurl, rtype="web")
 
     rec = bfc.get_metadata("schema_version")
-    assert rec.value == "0.99.4"
+    assert rec["value"] == "0.99.4"
 
     rec = bfc.get_metadata("language")
-    assert rec.value == "python"
+    assert rec["value"] == "python"
 
     rtrip = bfc.list_resources()
     assert len(rtrip) == 2

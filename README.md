@@ -29,7 +29,7 @@ resource = cache.add("myfile", "path/to/file.txt")
 resource = cache.get("myfile")
 
 # Use the cached file
-print(resource.rpath)  # Path to cached file
+print(resource["rpath"])  # Path to cached file
 ```
 
 ## Advanced Usage

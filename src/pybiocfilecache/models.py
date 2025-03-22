@@ -19,6 +19,9 @@ class Metadata(Base):
     def __repr__(self) -> str:
         return f"<Metadata(key='{self.key}', value='{self.value}')>"
 
+    def to_dict(self) -> dict:
+        return {"key": self.key, "value": self.value}
+
 
 class Resource(Base):
     """Resource information stored in cache.
@@ -74,3 +77,18 @@ class Resource(Base):
 
     def __repr__(self) -> str:
         return f"<Resource(rid='{self.rid}', rname='{self.rname}', rpath='{self.rpath}')>"
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "rid": self.rid,
+            "rname": self.rname,
+            "create_time": self.create_time,
+            "access_time": self.access_time,
+            "rpath": self.rpath,
+            "rtype": self.rtype,
+            "fpath": self.fpath,
+            "last_modified_time": self.last_modified_time,
+            "etag": self.etag,
+            "expires": self.expires,
+        }
