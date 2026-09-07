@@ -57,12 +57,7 @@ cache = BiocFileCache(config=config)
 # Add file with tags and expiration
 from datetime import datetime, timedelta
 
-resource = cache.add(
-    "myfile",
-    "path/to/file.txt",
-    tags=["data", "raw"],
-    expires=datetime.now() + timedelta(days=30)
-)
+resource = cache.add("myfile", "path/to/file.txt", tags=["data", "raw"], expires=datetime.now() + timedelta(days=30))
 
 # List resources by tag
 resources = cache.list_resources(tag="data")

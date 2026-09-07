@@ -7,7 +7,7 @@ import uuid
 import zlib
 from pathlib import Path
 from shutil import copy2, move
-from typing import List, Literal
+from typing import Literal
 
 __author__ = "Jayaram Kancherla"
 __copyright__ = "Jayaram Kancherla"
@@ -99,7 +99,7 @@ def download_web_file(url: str, filename: str, download: bool):
     return outpath
 
 
-def convert_to_columnar(list_of_dicts: List[dict]):
+def convert_to_columnar(list_of_dicts: list[dict]):
     if not list_of_dicts:
         return {}
 

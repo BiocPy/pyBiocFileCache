@@ -1,9 +1,10 @@
 import logging
+from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from time import sleep, time
-from typing import Any, Dict, Iterator, List, Literal, Optional, Tuple, Union
+from typing import Any, Literal
 
 from biocframe import BiocFrame
 from sqlalchemy import create_engine, func, text
@@ -39,7 +40,7 @@ class BiocFileCache:
     - Cleanup of expired resources
     """
 
-    def __init__(self, cache_dir: Optional[Union[str, Path]] = None, config: Optional[CacheConfig] = None):
+    def __init__(self, cache_dir: str | Path | None = None, config: CacheConfig | None = None):
         """Initialize cache with optional configuration.
 
         Args:
@@ -106,7 +107,7 @@ class BiocFileCache:
 
             return SCHEMA_VERSION
 
-    def _get_detached_resource(self, session: Session, obj: Union[Resource, Metadata]) -> Optional[dict]:
+    def _get_detached_resource(self, session: Session, obj: Resource | Metadata) -> dict | None:
         """Get a detached copy of a resource."""
         if obj is None:
             return None
@@ -205,7 +206,7 @@ class BiocFileCache:
     ######>> get resources <<######
     ###############################
 
-    def get(self, rname: str = None, rid: str = None) -> Optional[dict]:
+    def get(self, rname: str = None, rid: str = None) -> dict | None:
         """Get resource by name from cache.
 
         Args:
@@ -244,10 +245,10 @@ class BiocFileCache:
     def add(
         self,
         rname: str,
-        fpath: Union[str, Path],
+        fpath: str | Path,
         rtype: Literal["local", "web", "relative"] = "relative",
         action: Literal["copy", "move", "asis"] = "copy",
-        expires: Optional[datetime] = None,
+        expires: datetime | None = None,
         download: bool = True,
         ext: bool = True,
     ) -> dict:
@@ -334,7 +335,7 @@ class BiocFileCache:
                 session.commit()
                 raise Exception("Failed to add resource") from e
 
-    def add_batch(self, resources: List[Dict[str, Any]]) -> BiocFrame:
+    def add_batch(self, resources: list[dict[str, Any]]) -> BiocFrame:
         """Add multiple resources in a single transaction.
 
         Args:
@@ -356,7 +357,7 @@ class BiocFileCache:
     def update(
         self,
         rname: str,
-        fpath: Union[str, Path],
+        fpath: str | Path,
         action: Literal["copy", "move", "asis"] = "copy",
     ) -> dict:
         """Update an existing resource.
@@ -430,7 +431,7 @@ class BiocFileCache:
                     session.rollback()
                     raise Exception(f"Failed to remove resource '{rname}'") from e
 
-    def list_resources(self, rtype: Optional[str] = None, expired: Optional[bool] = None) -> BiocFrame:
+    def list_resources(self, rtype: str | None = None, expired: bool | None = None) -> BiocFrame:
         """List resources in the cache with optional filtering.
 
         Args:
@@ -521,7 +522,7 @@ class BiocFileCache:
     #                 session.merge(resource)
     #         session.commit()
 
-    def verify_cache(self) -> Tuple[int, int]:
+    def verify_cache(self) -> tuple[int, int]:
         """Verify integrity of all cached resources.
 
         Returns:
@@ -559,7 +560,7 @@ class BiocFileCache:
 
             return BiocFrame(convert_to_columnar([self._get_detached_resource(session, r) for r in resources]))
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get statistics about the cache."""
         with self.get_session() as session:
             total = session.query(Resource).count()
